@@ -1,0 +1,173 @@
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.paint.*?>
+
+<!--<BorderPane fx:id="borderPane" fx:controller="controller.CD4AController" 
+	xmlns:fx="http://javafx.com/fxml"> -->
+<BorderPane fx:id="borderPane" xmlns:fx="http://javafx.com/fxml">
+	<top>
+		<VBox>
+			<ToolBar fx:id="aToolBar" orientation="HORIZONTAL">
+				<HBox fx:id="umlBox">
+					<Button text="" fx:id="createBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/classw.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+					<Button text="" fx:id="packageBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/packagew.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+					<Button text="" fx:id="edgeBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/edgew.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+					<Button text="" fx:id="drawBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/draww.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+				</HBox>
+				<HBox fx:id="utilBox">
+					<Button text="" fx:id="selectBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/selectw.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+					<Button text="" fx:id="moveBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/movew.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+				</HBox>
+				<HBox fx:id="undoBox">
+					<Button text="" fx:id="deleteBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/deletew.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+					<Button text="" fx:id="undoBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/undow.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+					<Button text="" fx:id="redoBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/redow.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+				</HBox>
+				<HBox fx:id="recognizeBox">
+					<Button text="" fx:id="recognizeBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/recognizew.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+					<Button text="" fx:id="voiceBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/micw.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+					<Button text="" fx:id="validateBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/validatew.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+					<Button text="" fx:id="generateBtn">
+						<graphic>
+							<ImageView pickOnBounds="true" preserveRatio="true">
+								<image>
+									<Image url="/icons/generatew.png" />
+								</image>
+							</ImageView>
+						</graphic>
+					</Button>
+				</HBox>
+			</ToolBar>
+		</VBox>
+	</top>
+	<bottom>
+		<StackPane fx:id="infoPane">
+			<ToolBar fx:id="zoomPane">
+				<Pane HBox.hgrow="ALWAYS" />
+				<VBox alignment="CENTER">
+					<Slider fx:id="zoomSlider" min="10" max="200" value="100" />
+					<Label fx:id="zoomLabel" text="Zoom" />
+				</VBox>
+				<Pane HBox.hgrow="ALWAYS" />
+			</ToolBar>
+			<ColorPicker fx:id="colorPicker" StackPane.alignment="CENTER_LEFT" />
+			<Label fx:id="serverLabel" StackPane.alignment="CENTER_RIGHT" />
+		</StackPane>
+	</bottom>
+	<center>
+		<ScrollPane fx:id="scrollPane" pannable="true"
+			BorderPane.alignment="CENTER">
+			<content>
+				<Pane fx:id="drawPane" prefHeight="8000.0" prefWidth="8000.0">
+				</Pane>
+			</content>
+		</ScrollPane>
+	</center>
+</BorderPane>

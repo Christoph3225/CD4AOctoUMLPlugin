@@ -1,0 +1,266 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>CD4AnalysisPlugin</groupId>
+  <artifactId>CD4AnalysisPlugin</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <properties>
+
+		<!-- .. Libraries ..................................................... -->
+
+		<monticore.version>4.5.3</monticore.version>
+
+		<guava.version>18.0</guava.version>
+		<jsr305.version>3.0.0</jsr305.version>
+		<junit.version>4.12</junit.version>
+		<antlr.version>4.5</antlr.version>
+		<logback.version>1.1.2</logback.version>
+		<emf.common.version>2.5.0</emf.common.version>
+		<emf.ecore.version>2.5.0</emf.ecore.version>
+		<emf.ecore.xmi.version>2.5.0</emf.ecore.xmi.version>
+
+
+		<!-- .. Plugins ....................................................... -->
+
+		<!-- <mc4.maven.version>${monticore.version}</mc4.maven.version> -->
+
+		<assembly.plugin>2.5.3</assembly.plugin>
+		<compiler.plugin>3.2</compiler.plugin>
+		<release.plugin>2.5.1</release.plugin>
+		<source.plugin>2.4</source.plugin>
+		<surefire.plugin>2.18.1</surefire.plugin>
+
+		<!-- Classifiers -->
+
+		<grammars.classifier>grammars</grammars.classifier>
+
+		<!-- .. Misc .......................................................... -->
+
+		<java.version>1.8</java.version>
+		<wagon.provider.version>2.6</wagon.provider.version>
+
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
+
+	<!-- == DEFAULT BUILD SETTINGS =========================================== -->
+
+	<build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-webdav-jackrabbit</artifactId>
+				<version>${wagon.provider.version}</version>
+			</extension>
+		</extensions>
+
+		<plugins>
+			<!-- MontiCore Generation -->
+			<!-- <plugin> -->
+			<!-- <groupId>de.monticore.mojo</groupId> -->
+			<!-- <artifactId>monticore-maven-plugin</artifactId> -->
+			<!-- <version>${monticore.version}</version> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <configuration> -->
+			<!-- <script>de/monticore/monticore_noemf.groovy</script> -->
+			<!-- </configuration> -->
+			<!-- <goals> -->
+			<!-- <goal>generate</goal> -->
+			<!-- </goals> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
+
+			<!-- Other Configuration -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${compiler.plugin}</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${surefire.plugin}</version>
+				<configuration>
+					<classpathDependencyExcludes>
+						<classpathDependencyExclude>de.monticore:monticore-cli</classpathDependencyExclude>
+					</classpathDependencyExcludes>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>${release.plugin}</version>
+				<configuration>
+					<tagNameFormat>OctoUML-@{project.version}</tagNameFormat>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>${source.plugin}</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>de.monticore.mojo</groupId>
+										<artifactId>
+											monticore-maven-plugin
+										</artifactId>
+										<versionRange>
+											[4.5.3,)
+										</versionRange>
+										<goals>
+											<goal>generate</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<dependencies>
+		<!-- EMF dependencies -->
+		<!-- <dependency> <groupId>org.mod4j.org.eclipse.emf</groupId> <artifactId>ecore</artifactId> 
+			<version>${emf.ecore.version}</version> </dependency> <dependency> <groupId>org.mod4j.org.eclipse.emf.ecore</groupId> 
+			<artifactId>xmi</artifactId> <version>${emf.ecore.xmi.version}</version> 
+			</dependency> <dependency> <groupId>org.mod4j.org.eclipse.emf</groupId> <artifactId>common</artifactId> 
+			<version>${emf.common.version}</version> </dependency> <dependency> <groupId>de.monticore</groupId> 
+			<artifactId>monticore-emf-runtime</artifactId> <version>${monticore.version}</version> 
+			</dependency> -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>jsr305</artifactId>
+			<version>${jsr305.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.antlr</groupId>
+			<artifactId>antlr4-runtime</artifactId>
+			<version>${antlr.version}</version>
+		</dependency>
+
+		<!-- MontiCore Dependencies -->
+		<dependency>
+			<groupId>de.monticore</groupId>
+			<artifactId>monticore-runtime</artifactId>
+			<version>${monticore.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.monticore</groupId>
+			<artifactId>monticore-grammar</artifactId>
+			<version>${monticore.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.monticore</groupId>
+			<artifactId>monticore-grammar</artifactId>
+			<version>${monticore.version}</version>
+			<classifier>${grammars.classifier}</classifier>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- .. Test Libraries ............................................... -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.monticore</groupId>
+			<artifactId>monticore-runtime</artifactId>
+			<version>${monticore.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>${logback.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+  			<groupId>OctoUML</groupId>
+			<artifactId>OctoUML</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.controlsfx</groupId>
+			<artifactId>controlsfx</artifactId>
+			<version>8.40.11</version>
+		</dependency>
+
+	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>repository.jboss.org-public</id>
+			<name>JBoss.org Maven repository</name>
+			<url>https://repository.jboss.org/nexus/content/groups/public</url>
+		</repository>
+	</repositories>
+
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>de.monticore.mojo</groupId>
+				<artifactId>monticore-maven-plugin</artifactId>
+				<version>${monticore.version}</version>
+				<inherited>false</inherited>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>reporting-report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+		</plugins>
+	</reporting>
+</project>
