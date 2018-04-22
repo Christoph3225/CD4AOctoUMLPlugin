@@ -13,9 +13,9 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.paint.*?>
 
-<!--<BorderPane fx:id="borderPane" fx:controller="controller.CD4AController" 
-	xmlns:fx="http://javafx.com/fxml"> -->
-<BorderPane fx:id="borderPane" xmlns:fx="http://javafx.com/fxml">
+<BorderPane fx:id="borderPane" fx:controller="controller.CD4AController" 
+	xmlns:fx="http://javafx.com/fxml"> 
+<!-- <BorderPane fx:id="borderPane" xmlns:fx="http://javafx.com/fxml">-->
 	<top>
 		<VBox>
 			<ToolBar fx:id="aToolBar" orientation="HORIZONTAL">
