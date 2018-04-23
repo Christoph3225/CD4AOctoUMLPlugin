@@ -41,6 +41,13 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
+  
+  <distributionManagement>
+      <snapshotRepository>
+          <id>se-nexus</id>
+          <url>https://nexus.se.rwth-aachen.de/content/repositories/octouml-snapshots/</url>
+      </snapshotRepository>
+  </distributionManagement>
 
 
 	<!-- == DEFAULT BUILD SETTINGS =========================================== -->
