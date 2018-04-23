@@ -6,6 +6,7 @@ import controller.AbstractDiagramController;
 import controller.CD4AController;
 import de.monticore.ast.ASTNode;
 import de.monticore.prettyprint.IndentPrinter;
+import de.monticore.umlcd4a.cd4analysis._ast.ASTCDCompilationUnit;
 import model.Graph;
 
 public class CD4APlugin implements MontiCorePlugIn {
@@ -26,7 +27,7 @@ public class CD4APlugin implements MontiCorePlugIn {
 	public String getView() {
 		return "view/fxml/cd4aView.fxml";
 	}
-
+	
 	@Override
 	public String getDSLName() {
 		return "CD4Analysis";
@@ -55,7 +56,7 @@ public class CD4APlugin implements MontiCorePlugIn {
 	}
 
 	@Override
-	public ASTNode shapeToAST(Graph graph) {
+	public ASTCDCompilationUnit shapeToAST(Graph graph) {
 		// TODO Auto-generated method stub
 		return null;
 	}

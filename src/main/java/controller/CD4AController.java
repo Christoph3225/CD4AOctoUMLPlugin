@@ -4,12 +4,14 @@ import java.awt.geom.Point2D;
 
 import org.controlsfx.control.Notifications;
 
+import de.monticore.umlcd4a.cd4analysis._ast.ASTCDCompilationUnit;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import model.Sketch;
+import plugin.CD4APlugin;
 import util.commands.CompoundCommand;
 import util.commands.MoveGraphElementCommand;
 import view.nodes.AbstractNodeView;
@@ -19,6 +21,8 @@ public class CD4AController extends AbstractDiagramController {
   
   @FXML
   Button validateBtn;
+  
+  CD4APlugin plugin = new CD4APlugin();
   
   @FXML
   public void initialize() {
@@ -475,6 +479,7 @@ public class CD4AController extends AbstractDiagramController {
     validateBtn.setOnAction(event -> {
       // Button was clicked, do something...
       Notifications.create().title("Test").text("Funktioniert").showInformation();
+      ASTCDCompilationUnit unit = plugin.shapeToAST(getGraphModel());
     });
   }
   

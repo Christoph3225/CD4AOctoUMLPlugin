@@ -41,13 +41,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
-  
-  <distributionManagement>
-      <snapshotRepository>
-          <id>se-nexus</id>
-          <url>https://nexus.se.rwth-aachen.de/content/repositories/octouml-snapshots/</url>
-      </snapshotRepository>
-  </distributionManagement>
 
 
 	<!-- == DEFAULT BUILD SETTINGS =========================================== -->
@@ -230,16 +223,29 @@
 			<scope>test</scope>
 		</dependency>
 		
-        <dependency>
-            <groupId>octouml</groupId>
-            <artifactId>diagram-control</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
+		<dependency>
+    			<groupId>octouml</groupId>
+			<artifactId>diagram-control</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+    		</dependency>
 		
 		<dependency>
 			<groupId>org.controlsfx</groupId>
 			<artifactId>controlsfx</artifactId>
 			<version>8.40.11</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.monticore.lang</groupId>
+			<artifactId>cd4analysis</artifactId>
+			<version>1.3.9</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.monticore.lang</groupId>
+			<artifactId>cd4analysis</artifactId>
+			<version>1.3.9</version>
+			<classifier>sources</classifier>
 		</dependency>
 
 	</dependencies>
