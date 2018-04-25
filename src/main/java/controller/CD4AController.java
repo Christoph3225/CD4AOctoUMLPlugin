@@ -1,10 +1,13 @@
 package controller;
 
 import java.awt.geom.Point2D;
+import java.io.IOException;
+import java.util.Optional;
 
 import org.controlsfx.control.Notifications;
 
 import de.monticore.umlcd4a.cd4analysis._ast.ASTCDCompilationUnit;
+import de.monticore.umlcd4a.cd4analysis._parser.CD4AnalysisParser;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
@@ -479,7 +482,19 @@ public class CD4AController extends AbstractDiagramController {
     validateBtn.setOnAction(event -> {
       // Button was clicked, do something...
       Notifications.create().title("Test").text("Funktioniert").showInformation();
-      ASTCDCompilationUnit unit = plugin.shapeToAST(getGraphModel());
+      //TODO
+      String path = "test";
+      ASTCDCompilationUnit unit = plugin.shapeToAST(getGraphModel(), path);
+      CD4AnalysisParser parser = new CD4AnalysisParser();
+      Optional<ASTCDCompilationUnit> model;
+      try {
+        model = parser.parse("/cd4aplugin/LectureExam.cd");
+      }
+      catch (IOException e) {
+        e.printStackTrace();
+      }
+      //String output = plugin.getPrettyPrinter().prettyprint(model.get());
+      // Notifications.create().title("Test").text(output).showInformation();
     });
   }
   
