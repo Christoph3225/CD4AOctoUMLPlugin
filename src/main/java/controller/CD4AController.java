@@ -483,7 +483,7 @@ public class CD4AController extends AbstractDiagramController {
       // Button was clicked, do something...
       Notifications.create().title("Test").text("Funktioniert").showInformation();
       //TODO
-      String path = "test";
+      String path = "/Users/Christoph/Desktop";
       ASTCDCompilationUnit unit = plugin.shapeToAST(getGraphModel(), path);
       CD4AnalysisParser parser = new CD4AnalysisParser();
       Optional<ASTCDCompilationUnit> model;

@@ -1,6 +1,7 @@
 package plugin;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
@@ -91,7 +92,8 @@ public class CD4APlugin implements MontiCorePlugIn {
 	public void graphToModel(Graph graph, String path, String targetName) {
 	  FileWriter fw;
     try {
-      fw = new FileWriter(path + "/cd4aplugin/" + targetName + ".cd");
+      File file = new File(path + "/cd4aplugin/" + targetName + ".cd");
+      fw = new FileWriter(file);
       BufferedWriter bw = new BufferedWriter(fw);
       
       // write the package statement
