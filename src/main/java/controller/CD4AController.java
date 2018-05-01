@@ -22,6 +22,7 @@ import view.nodes.PackageNodeView;
 
 public class CD4AController extends AbstractDiagramController {
   
+  //Comment for push error fixing
   @FXML
   Button validateBtn;
   
