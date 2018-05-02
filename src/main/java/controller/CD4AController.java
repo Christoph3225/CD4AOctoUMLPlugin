@@ -13,6 +13,7 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
+import javafx.stage.Stage;
 import model.Sketch;
 import plugin.CD4APlugin;
 import util.commands.CompoundCommand;
@@ -22,17 +23,20 @@ import view.nodes.PackageNodeView;
 
 public class CD4AController extends AbstractDiagramController {
   
-  //Comment for push error fixing
   @FXML
   Button validateBtn;
   
   CD4APlugin plugin = new CD4APlugin();
+  Stage stage;
   
   @FXML
   public void initialize() {
     super.initialize();
     initToolBarActions();
     initDrawPaneActions();
+    //String modelName = plugin.showContainerInfoDialog(this.stage).get(0);
+    String modelName = "TestCD";
+    plugin.addUMLFlag(modelName);
   }
   
   void initDrawPaneActions() {
@@ -484,16 +488,18 @@ public class CD4AController extends AbstractDiagramController {
       // Button was clicked, do something...
       Notifications.create().title("Test").text("Funktioniert").showInformation();
       //TODO
-      String path = "/Users/Christoph/Desktop";
-      ASTCDCompilationUnit unit = plugin.shapeToAST(getGraphModel(), path);
-      CD4AnalysisParser parser = new CD4AnalysisParser();
+      //String path = "/Users/Christoph/Desktop";
+      ASTCDCompilationUnit unit = plugin.shapeToAST(getGraphModel());//, path);
+      String output = unit.getCDDefinition().getName();
+      Notifications.create().title("Test").text(output).showInformation();
+      /*CD4AnalysisParser parser = new CD4AnalysisParser();
       Optional<ASTCDCompilationUnit> model;
       try {
-        model = parser.parse("/cd4aplugin/LectureExam.cd");
+        model = parser.parse("/cd4aplugin/TestCD.cd");
       }
       catch (IOException e) {
         e.printStackTrace();
-      }
+      }*/
       //String output = plugin.getPrettyPrinter().prettyprint(model.get());
       // Notifications.create().title("Test").text(output).showInformation();
     });
