@@ -1,13 +1,20 @@
 package controller;
 
 import java.awt.geom.Point2D;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Optional;
 
+import org.apache.commons.io.FileUtils;
 import org.controlsfx.control.Notifications;
 
+import de.monticore.prettyprint.IndentPrinter;
+import de.monticore.umlcd4a.cd4analysis._ast.ASTCDClass;
 import de.monticore.umlcd4a.cd4analysis._ast.ASTCDCompilationUnit;
 import de.monticore.umlcd4a.cd4analysis._parser.CD4AnalysisParser;
+import de.monticore.umlcd4a.prettyprint.CDPrettyPrinterConcreteVisitor;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
@@ -27,16 +34,13 @@ public class CD4AController extends AbstractDiagramController {
   Button validateBtn;
   
   CD4APlugin plugin = new CD4APlugin();
-  Stage stage;
+  //Stage stage = getStage();
   
   @FXML
   public void initialize() {
     super.initialize();
     initToolBarActions();
     initDrawPaneActions();
-    //String modelName = plugin.showContainerInfoDialog(this.stage).get(0);
-    String modelName = "TestCD";
-    plugin.addUMLFlag(modelName);
   }
   
   void initDrawPaneActions() {
@@ -472,7 +476,12 @@ public class CD4AController extends AbstractDiagramController {
     undoBtn.setOnAction(event -> undoManager.undoCommand());
     redoBtn.setOnAction(event -> undoManager.redoCommand());
     deleteBtn.setOnAction(event -> deleteSelected());
-    recognizeBtn.setOnAction(event -> recognizeController.recognize(selectedSketches));
+    recognizeBtn.setOnAction(event -> {
+      String modelName = plugin.showContainerInfoDialog(getStage()).get(0);
+      //String modelName = "TestCD";
+      plugin.addUMLFlag(modelName);
+      recognizeController.recognize(selectedSketches);
+    });
     voiceBtn.setOnAction(event -> {
       if (voiceController.voiceEnabled) {
         Notifications.create().title("Voice disabled").text("Voice commands are now disabled.").showInformation();
@@ -485,23 +494,19 @@ public class CD4AController extends AbstractDiagramController {
     
     // TODO set Actions of new Buttons via CD4APlugin
     validateBtn.setOnAction(event -> {
-      // Button was clicked, do something...
-      Notifications.create().title("Test").text("Funktioniert").showInformation();
-      //TODO
-      //String path = "/Users/Christoph/Desktop";
-      ASTCDCompilationUnit unit = plugin.shapeToAST(getGraphModel());//, path);
-      String output = unit.getCDDefinition().getName();
-      Notifications.create().title("Test").text(output).showInformation();
-      /*CD4AnalysisParser parser = new CD4AnalysisParser();
-      Optional<ASTCDCompilationUnit> model;
+      ASTCDCompilationUnit unit = plugin.shapeToAST(getGraphModel());
+      IndentPrinter i = new IndentPrinter();
+      CDPrettyPrinterConcreteVisitor prettyprinter = new CDPrettyPrinterConcreteVisitor(i);
+      
+      //TODO Pfad richtig setzen
       try {
-        model = parser.parse("/cd4aplugin/TestCD.cd");
+        FileUtils.writeStringToFile(new File("/Users/Christoph/Desktop/test.cd"), prettyprinter.prettyprint(unit));
       }
       catch (IOException e) {
+        // TODO Auto-generated catch block
         e.printStackTrace();
-      }*/
-      //String output = plugin.getPrettyPrinter().prettyprint(model.get());
-      // Notifications.create().title("Test").text(output).showInformation();
+      }
+      
     });
   }
   
