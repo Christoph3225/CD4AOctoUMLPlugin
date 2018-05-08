@@ -3,6 +3,7 @@ package controller;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.controlsfx.control.Notifications;
@@ -15,7 +16,10 @@ import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
+import model.Graph;
 import model.Sketch;
+import model.edges.Edge;
+import model.edges.InheritanceEdge;
 import plugin.CD4APlugin;
 import util.commands.CompoundCommand;
 import util.commands.MoveGraphElementCommand;
@@ -491,20 +495,32 @@ public class CD4AController extends AbstractDiagramController {
     
     // TODO set Actions of new Buttons via CD4APlugin
     validateBtn.setOnAction(event -> {
+      //test(getGraphModel());
+      
       ASTCDCompilationUnit unit = plugin.shapeToAST(getGraphModel(), modelName);
       IndentPrinter i = new IndentPrinter();
       CDPrettyPrinterConcreteVisitor prettyprinter = new CDPrettyPrinterConcreteVisitor(i);
       
       //TODO Pfad richtig setzen
       try {
-        FileUtils.writeStringToFile(new File("/Users/Christoph/Desktop/" + modelName + ".cd"), prettyprinter.prettyprint(unit));
+        String path = "/Users/Christoph/Desktop/";
+        FileUtils.writeStringToFile(new File(path + modelName + ".cd"), prettyprinter.prettyprint(unit));
       }
       catch (IOException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
       
     });
+  }
+  
+  private void test(Graph g) {
+    List<Edge> edges = g.getAllEdges();
+    for(Edge e : edges) {
+      if(e instanceof InheritanceEdge) {
+        System.out.println("StartNode: " + e.getStartNode().getTitle());
+        System.out.println("EndNode: " + e.getEndNode().getTitle());
+      }
+    }
   }
   
   @FXML
