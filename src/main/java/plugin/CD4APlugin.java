@@ -1,5 +1,6 @@
 package plugin;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +11,7 @@ import de.monticore.ast.ASTNode;
 import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.types.prettyprint.TypesPrettyPrinterConcreteVisitor;
 import de.monticore.types.types._ast.*;
+import de.monticore.types.types._parser.TypesParser;
 import de.monticore.umlcd4a.cd4analysis._ast.*;
 import de.monticore.umlcd4a.prettyprint.CDPrettyPrinterConcreteVisitor;
 import javafx.scene.control.TextInputDialog;
@@ -61,7 +63,6 @@ public class CD4APlugin implements MontiCorePlugIn {
     return null;
   }
   
-  //TypesPrettyPrinterConcreteVisitor
   @Override
   public TypesPrettyPrinterConcreteVisitor getPrettyPrinter() {
     IndentPrinter i = new IndentPrinter();
@@ -94,27 +95,41 @@ public class CD4APlugin implements MontiCorePlugIn {
     // create classes, interfaces, enums of classdiagram
     for (AbstractNode cNode : graph.getAllNodes()) {
       if (cNode instanceof ClassNode) {
-        //Superklassen einer Klasse
+        // Superklassen einer Klasse
         List<String> superClazzes = new ArrayList<>();
+        List<String> superInterf = new ArrayList<>();
         
         String clazzName = cNode.getTitle();
         if (clazzName.contains("<<interface>>")) {
           // cNode is an interface
-          ASTCDInterface interf = createASTInterface((ClassNode) cNode, clazzName);
+          List<Edge> edges = graph.getAllEdges();
+          for (Edge e : edges) {
+            if (e instanceof InheritanceEdge && e.getStartNode() == cNode) {
+              String superName = e.getEndNode().getTitle();
+              if(superName.contains("<<interface>>")) {
+                superInterf.add(superName);
+              }
+            }
+          }
+          ASTCDInterface interf = createASTInterface((ClassNode) cNode, clazzName, superInterf);
           interfazes.add(interf);
           
         }
         else if (clazzName.contains("<<abstract>>")) {
           // cNode is an abstract class
           List<Edge> edges = graph.getAllEdges();
-          for(Edge e : edges) {
-            if(e instanceof InheritanceEdge) {
+          for (Edge e : edges) {
+            if (e instanceof InheritanceEdge && e.getStartNode() == cNode) {
               String superName = e.getEndNode().getTitle();
-              superClazzes.add(superName);
+              if(superName.contains("<<interface>>")) {
+                superInterf.add(superName);
+              } else {
+                superClazzes.add(superName);
+              }
             }
           }
           
-          ASTCDClass clazz = createASTClass((ClassNode) cNode, clazzName, true, superClazzes);
+          ASTCDClass clazz = createASTClass((ClassNode) cNode, clazzName, true, superClazzes, superInterf);
           clazzes.add(clazz);
           
         }
@@ -127,21 +142,27 @@ public class CD4APlugin implements MontiCorePlugIn {
         else {
           // cNode is a class
           List<Edge> edges = graph.getAllEdges();
-          for(Edge e : edges) {
-            if(e instanceof InheritanceEdge) {
+          for (Edge e : edges) {
+            if (e instanceof InheritanceEdge && e.getStartNode() == cNode) {
               String superName = e.getEndNode().getTitle();
-              superClazzes.add(superName);
+              if(superName.contains("<<interface>>")) {
+                superInterf.add(superName);
+              } else {
+                superClazzes.add(superName);
+              }
             }
           }
           
-          ASTCDClass clazz = createASTClass((ClassNode) cNode, clazzName, false, superClazzes);
+          ASTCDClass clazz = createASTClass((ClassNode) cNode, clazzName, false, superClazzes, superInterf);
           clazzes.add(clazz);
         }
       }
       if (cNode instanceof PackageNode) {
-        // TODO what do here?
+        // later in container dialog
       }
     }
+    
+    //TODO associations
     
     ASTCDDefinition cdDef = cd4aFactory.createASTCDDefinition(cdName, clazzes, interfazes, enoms, assocs);
     ASTCDCompilationUnit unit = cd4aFactory.createASTCDCompilationUnit(r__packages, imports, cdDef);
@@ -152,14 +173,13 @@ public class CD4APlugin implements MontiCorePlugIn {
   }
   
   @SuppressWarnings("static-access")
-  private ASTCDInterface createASTInterface(ClassNode node, String name) {
-
-    ASTModifier modifier = cd4aFactory.createASTModifier(null, false, false, false, false, false, true, false);;
+  private ASTCDInterface createASTInterface(ClassNode node, String name, List<String> superInterf) {
+    
+    ASTModifier modifier = cd4aFactory.createASTModifier(null, false, false, false, false, false, true, false);
     String interfName = name;
     List<ASTReferenceType> interfaces = new ArrayList<>();
-    //TODO Namen anhand von Graph bekommen
-    List<String> extendsInterfNames = new ArrayList<>();
-    for(String s : extendsInterfNames) {
+    List<String> extendsInterfNames = superInterf;
+    for (String s : extendsInterfNames) {
       List<String> eINames = new ArrayList<>();
       eINames.add(s);
       ASTReferenceType interfExtend = typesFactory.createASTSimpleReferenceType(eINames, null);
@@ -189,11 +209,10 @@ public class CD4APlugin implements MontiCorePlugIn {
       interfMethods = new ArrayList<>();
       for (String s : methodArr) {
         s = s.replace("\n", "");
-          ASTCDMethod method = createASTCDMethod(s);
-          interfMethods.add(method);
+        ASTCDMethod method = createASTCDMethod(s);
+        interfMethods.add(method);
       }
     }
-    
     
     ASTCDInterface retInterf = cd4aFactory.createASTCDInterface(modifier, interfName, interfaces, interfAttributes, interfMethods);
     return retInterf;
@@ -205,7 +224,7 @@ public class CD4APlugin implements MontiCorePlugIn {
     String enumName = name;
     List<ASTReferenceType> interfaces = new ArrayList<>();
     List<String> extendsInterfNames = new ArrayList<>();
-    for(String s : extendsInterfNames) {
+    for (String s : extendsInterfNames) {
       List<String> eINames = new ArrayList<>();
       eINames.add(s);
       ASTReferenceType interfExtend = typesFactory.createASTSimpleReferenceType(eINames, null);
@@ -221,7 +240,9 @@ public class CD4APlugin implements MontiCorePlugIn {
       enumConstants = new ArrayList<>();
       String[] arr = nodeAttributes.split(",");
       for (String s : arr) {
-        //TODO
+        List<ASTCDEnumParameter> enomParams = new ArrayList<>();
+        ASTCDEnumConstant enomConst = cd4aFactory.createASTCDEnumConstant(s, enomParams);
+        enumConstants.add(enomConst);
       }
     }
     
@@ -263,7 +284,7 @@ public class CD4APlugin implements MontiCorePlugIn {
   }
   
   @SuppressWarnings("static-access")
-  private ASTCDClass createASTClass(ClassNode node, String name, boolean abstrakt, List<String> superClz) {
+  private ASTCDClass createASTClass(ClassNode node, String name, boolean abstrakt, List<String> superClz, List<String> superInterf) {
     
     // Stereotype of the class always not present
     // ASTStereotype stereotype = cd4aFactory.createASTStereotype();
@@ -281,6 +302,13 @@ public class CD4APlugin implements MontiCorePlugIn {
     
     // Interfaces of the class if present else empty list
     List<ASTReferenceType> clazzInterfaces = new ArrayList<>();
+    List<String> extendsInterfNames = superInterf;
+    for (String s : extendsInterfNames) {
+      List<String> eINames = new ArrayList<>();
+      eINames.add(s);
+      ASTReferenceType interfExtend = typesFactory.createASTSimpleReferenceType(eINames, null);
+      clazzInterfaces.add(interfExtend);
+    }
     
     // Attributes of the class if present else empty list
     List<ASTCDAttribute> clazzAttributes;
@@ -298,7 +326,6 @@ public class CD4APlugin implements MontiCorePlugIn {
     }
     
     String nodeOperations = node.getOperations();
-    String[] methodArr = nodeOperations.split(";");
     
     // Constructors of the class if present else empty list
     List<ASTCDConstructor> clazzConstructors;
@@ -307,6 +334,7 @@ public class CD4APlugin implements MontiCorePlugIn {
     }
     else {
       clazzConstructors = new ArrayList<>();
+      String[] methodArr = nodeOperations.split(";");
       for (String s : methodArr) {
         if (s.contains(clazzName)) {
           ASTCDConstructor constructor = createASTCDConstructor(clazzName, s);
@@ -322,6 +350,7 @@ public class CD4APlugin implements MontiCorePlugIn {
     }
     else {
       clazzMethods = new ArrayList<>();
+      String[] methodArr = nodeOperations.split(";");
       for (String s : methodArr) {
         s = s.replace("\n", "");
         if (!s.contains(clazzName)) {
@@ -332,9 +361,10 @@ public class CD4APlugin implements MontiCorePlugIn {
     }
     
     ASTCDClass retClass;
-    if(superClassNames.isEmpty()) {
+    if (superClassNames.isEmpty()) {
       retClass = cd4aFactory.createASTCDClass(clazzModifier, clazzName, null, clazzInterfaces, clazzAttributes, clazzConstructors, clazzMethods);
-    } else {
+    }
+    else {
       retClass = cd4aFactory.createASTCDClass(clazzModifier, clazzName, clazzSuperclass, clazzInterfaces, clazzAttributes, clazzConstructors, clazzMethods);
     }
     
@@ -343,73 +373,124 @@ public class CD4APlugin implements MontiCorePlugIn {
   
   @SuppressWarnings("static-access")
   private ASTCDConstructor createASTCDConstructor(String name, String method) {
+    TypesParser typeParser = new TypesParser();
     ASTModifier clazzModifier = cd4aFactory.createASTModifier(null, false, false, false, false, false, true, false);
     List<ASTCDParameter> constructParams = new ArrayList<>();
     String[] paramArr = method.split("\\(|\\)");
-    String strParam = paramArr[1];
-    String[] paramAttrArr = strParam.split(",");
-    for(String a : paramAttrArr) {
-      String[] arr2 = a.split("\\s");
-      String attrType = arr2[0];
-      String attrName = arr2[1];
-      ASTType typeOfAttr = null;
-      //TODO What is ellipsis in parameter
-      //TODO Type richtig setzen => klar nachdem es bei attribute geklärt wurde
-      ASTCDParameter methodParam = cd4aFactory.createASTCDParameter(typeOfAttr,attrName,false);
-      constructParams.add(methodParam);
+    if (paramArr.length > 1) {
+      String strParam = paramArr[1];
+      String[] paramAttrArr = strParam.split(",");
+      for (String a : paramAttrArr) {
+        String[] arr3 = a.split("\\s");
+        String attrType = arr3[0];
+        String attrName = arr3[1];
+        
+        Optional<de.monticore.types.types._ast.ASTType> typeResult = null;
+        try {
+          typeResult = typeParser.parse_String(attrType);
+        }
+        catch (IOException e) {
+          e.printStackTrace();
+        }
+        
+        ASTType typeOfAttr = typeResult.get();
+        
+        ASTCDParameter constructParam;
+        if(a.contains("...")) {
+          constructParam = cd4aFactory.createASTCDParameter(typeOfAttr, attrName, true);
+        } else {
+          constructParam = cd4aFactory.createASTCDParameter(typeOfAttr, attrName, false);
+        }
+        constructParams.add(constructParam);
+      }
     }
-    
     List<ASTQualifiedName> constructExcepts = new ArrayList<>();
     List<String> exceptions = new ArrayList<>();
     String[] excepArr = method.split("throws");
-    String exceptAttr = excepArr[1];
-    String[] exceptAttrArr = exceptAttr.split(",");
-    for(String e : exceptAttrArr) {
-      exceptions.add(e);
-    }
-    ASTQualifiedName methodExcept = typesFactory.createASTQualifiedName(exceptions);
-    constructExcepts.add(methodExcept);
     
+    if (excepArr.length > 1) {
+      String exceptAttr = excepArr[0];
+      String[] exceptAttrArr = exceptAttr.split(",");
+      for (String e : exceptAttrArr) {
+        exceptions.add(e);
+      }
+      ASTQualifiedName methodExcept = typesFactory.createASTQualifiedName(exceptions);
+      constructExcepts.add(methodExcept);
+    }
     ASTCDConstructor constructor = cd4aFactory.createASTCDConstructor(clazzModifier, name, constructParams, constructExcepts);
     return constructor;
   }
   
   @SuppressWarnings("static-access")
   private ASTCDMethod createASTCDMethod(String m) {
+    TypesParser typeParser = new TypesParser();
     ASTModifier clazzModifier = cd4aFactory.createASTModifier(null, false, false, false, false, false, true, false);
-    //TODO return type abfangen und setzen
-    ASTReturnType returnType = typesFactory.createASTVoidType();
+    ASTReturnType returnType;
     String[] arr = m.split("\\(");
-    String methodName = arr[0];
+    String methodNameAndReturn = arr[0];
+    String[] arr2 = methodNameAndReturn.split("\\s");
+    String mRetTypeStr = arr2[0];
+    String mName = arr2[1];
+    
+    if (mRetTypeStr.equals("void")) {
+      returnType = typesFactory.createASTVoidType();
+    }
+    else {
+      Optional<de.monticore.types.types._ast.ASTType> mRetTypeResult = null;
+      try {
+        mRetTypeResult = typeParser.parse_String(mRetTypeStr);
+      }
+      catch (IOException e) {
+        e.printStackTrace();
+      }
+      
+      ASTType mRetType = mRetTypeResult.get();
+      returnType = mRetType;
+    }
     
     List<ASTCDParameter> methodParams = new ArrayList<>();
     List<ASTQualifiedName> methodExcepts = new ArrayList<>();
     String[] paramArr = m.split("\\(|\\)");
-    String strParam = paramArr[1];
-    String[] paramAttrArr = strParam.split(",");
-    for(String a : paramAttrArr) {
-      String[] arr2 = a.split("\\s");
-      String attrType = arr2[0];
-      String attrName = arr2[1];
-      ASTType typeOfAttr = null;
-      //TODO What is ellipsis in parameter
-      //TODO Type richtig setzen => klar nachdem es bei attribute geklärt wurde
-      ASTCDParameter methodParam = cd4aFactory.createASTCDParameter(typeOfAttr,attrName,false);
-      methodParams.add(methodParam);
+    if (paramArr.length > 1) {
+      String strParam = paramArr[1];
+      String[] paramAttrArr = strParam.split(",");
+      for (String a : paramAttrArr) {
+        String[] arr3 = a.split("\\s");
+        String attrType = arr3[0];
+        String attrName = arr3[1];
+        
+        Optional<de.monticore.types.types._ast.ASTType> typeResult = null;
+        try {
+          typeResult = typeParser.parse_String(attrType);
+        }
+        catch (IOException e) {
+          e.printStackTrace();
+        }
+        
+        ASTType typeOfAttr = typeResult.get();
+        
+        ASTCDParameter methodParam;
+        if(a.contains("...")) {
+          methodParam = cd4aFactory.createASTCDParameter(typeOfAttr, attrName, true);
+        } else {
+          methodParam = cd4aFactory.createASTCDParameter(typeOfAttr, attrName, false);
+        }
+        methodParams.add(methodParam);
+      }
     }
     
-   
     List<String> exceptions = new ArrayList<>();
     String[] excepArr = m.split("throws");
-    String exceptAttr = excepArr[1];
-    String[] exceptAttrArr = exceptAttr.split(",");
-    for(String e : exceptAttrArr) {
-      exceptions.add(e);
+    if (excepArr.length > 1) {
+      String exceptAttr = excepArr[0];
+      String[] exceptAttrArr = exceptAttr.split(",");
+      for (String e : exceptAttrArr) {
+        exceptions.add(e);
+      }
+      ASTQualifiedName methodExcept = typesFactory.createASTQualifiedName(exceptions);
+      methodExcepts.add(methodExcept);
     }
-    ASTQualifiedName methodExcept = typesFactory.createASTQualifiedName(exceptions);
-    methodExcepts.add(methodExcept);
-    
-    ASTCDMethod method = cd4aFactory.createASTCDMethod(clazzModifier, returnType, methodName, methodParams, methodExcepts);
+    ASTCDMethod method = cd4aFactory.createASTCDMethod(clazzModifier, returnType, mName, methodParams, methodExcepts);
     return method;
   }
   
@@ -422,32 +503,16 @@ public class CD4APlugin implements MontiCorePlugIn {
     String attrType = arr2[0];
     String attrName = arr2[1];
     
-    //TODO klappt noch nicht ganz es wird immer void davor geschrieben
-    ASTType typeOfAttr = null;
-    if(attrType.equals("boolean")) {
-      typeOfAttr = typesFactory.createASTPrimitiveType(ASTConstantsTypes.BOOLEAN);
+    TypesParser typeParser = new TypesParser();
+    Optional<de.monticore.types.types._ast.ASTType> typeResult = null;
+    try {
+      typeResult = typeParser.parse_String(attrType);
     }
-    if(attrType.equals("byte")) {
-      typeOfAttr = typesFactory.createASTPrimitiveType(ASTConstantsTypes.BYTE);
+    catch (IOException e) {
+      e.printStackTrace();
     }
-    if(attrType.equals("char")) {
-      typeOfAttr = typesFactory.createASTPrimitiveType(ASTConstantsTypes.CHAR);
-    }
-    if(attrType.equals("double")) {
-      typeOfAttr = typesFactory.createASTPrimitiveType(ASTConstantsTypes.DOUBLE);
-    }
-    if(attrType.equals("float")) {
-      typeOfAttr = typesFactory.createASTPrimitiveType(ASTConstantsTypes.FLOAT);
-    }
-    if(attrType.equals("int")) {
-      typeOfAttr = typesFactory.createASTPrimitiveType(ASTConstantsTypes.INT);
-    }
-    if(attrType.equals("long")) {
-      typeOfAttr = typesFactory.createASTPrimitiveType(ASTConstantsTypes.LONG);
-    }
-    if(attrType.equals("short")) {
-      typeOfAttr = typesFactory.createASTPrimitiveType(ASTConstantsTypes.SHORT);
-    }
+    
+    ASTType typeOfAttr = typeResult.get();
     
     ASTCDAttribute cdAttr = cd4aFactory.createASTCDAttribute(clazzModifier, typeOfAttr, attrName, null);
     return cdAttr;
