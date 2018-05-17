@@ -47,6 +47,11 @@ public class CD4AController extends AbstractDiagramController {
     initErrorLog();
   }
   
+  @Override
+  public String getTabControllerName() {
+    return "CD4A Class diagram";
+  }
+  
   void initDrawPaneActions() {
     drawPane.setOnMousePressed(event -> {
       if (mode == Mode.NO_MODE) {
