@@ -17,8 +17,8 @@ import de.monticore.umlcd4a.prettyprint.CDPrettyPrinterConcreteVisitor;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 import model.Graph;
-import model.edges.Edge;
-import model.edges.InheritanceEdge;
+import model.edges.*;
+import model.edges.AbstractEdge.Direction;
 import model.nodes.AbstractNode;
 import model.nodes.ClassNode;
 import model.nodes.PackageNode;
@@ -100,18 +100,20 @@ public class CD4APlugin implements MontiCorePlugIn {
         List<String> superInterf = new ArrayList<>();
         
         String clazzName = cNode.getTitle();
+        
         if (clazzName.contains("<<interface>>")) {
           // cNode is an interface
+          String interfName = clazzName.split("<<interface>>")[1];
           List<Edge> edges = graph.getAllEdges();
           for (Edge e : edges) {
             if (e instanceof InheritanceEdge && e.getStartNode() == cNode) {
               String superName = e.getEndNode().getTitle();
-              if(superName.contains("<<interface>>")) {
+              if (superName.contains("<<interface>>")) {
                 superInterf.add(superName);
               }
             }
           }
-          ASTCDInterface interf = createASTInterface((ClassNode) cNode, clazzName, superInterf);
+          ASTCDInterface interf = createASTInterface((ClassNode) cNode, interfName, superInterf);
           interfazes.add(interf);
           
         }
@@ -121,9 +123,10 @@ public class CD4APlugin implements MontiCorePlugIn {
           for (Edge e : edges) {
             if (e instanceof InheritanceEdge && e.getStartNode() == cNode) {
               String superName = e.getEndNode().getTitle();
-              if(superName.contains("<<interface>>")) {
-                superInterf.add(superName);
-              } else {
+              if (superName.contains("<<interface>>")) {
+                superInterf.add(superName.split("<<interface>>")[1]);
+              }
+              else {
                 superClazzes.add(superName);
               }
             }
@@ -135,7 +138,8 @@ public class CD4APlugin implements MontiCorePlugIn {
         }
         else if (clazzName.contains("<<enum>>")) {
           // cNode is an enum
-          ASTCDEnum enom = createASTEnum((ClassNode) cNode, clazzName);
+          String enomName = clazzName.split("<<enum>>")[1];
+          ASTCDEnum enom = createASTEnum((ClassNode) cNode, enomName);
           enoms.add(enom);
           
         }
@@ -145,9 +149,10 @@ public class CD4APlugin implements MontiCorePlugIn {
           for (Edge e : edges) {
             if (e instanceof InheritanceEdge && e.getStartNode() == cNode) {
               String superName = e.getEndNode().getTitle();
-              if(superName.contains("<<interface>>")) {
-                superInterf.add(superName);
-              } else {
+              if (superName.contains("<<interface>>")) {
+                superInterf.add(superName.split("<<interface>>")[1]);
+              }
+              else {
                 superClazzes.add(superName);
               }
             }
@@ -162,7 +167,13 @@ public class CD4APlugin implements MontiCorePlugIn {
       }
     }
     
-    //TODO associations
+    List<Edge> graphEdges = graph.getAllEdges();
+    for (Edge e : graphEdges) {
+      if (!(e instanceof InheritanceEdge)) {
+        ASTCDAssociation cdAssoc = createASTCDAssociation(e);
+        assocs.add(cdAssoc);
+      }
+    }
     
     ASTCDDefinition cdDef = cd4aFactory.createASTCDDefinition(cdName, clazzes, interfazes, enoms, assocs);
     ASTCDCompilationUnit unit = cd4aFactory.createASTCDCompilationUnit(r__packages, imports, cdDef);
@@ -186,32 +197,31 @@ public class CD4APlugin implements MontiCorePlugIn {
       interfaces.add(interfExtend);
     }
     
-    List<ASTCDAttribute> interfAttributes = new ArrayList<>();
+    List<ASTCDAttribute> interfAttributes;
     String nodeAttributes = node.getAttributes();
-    if (nodeAttributes.equals("") || nodeAttributes == null) {
-      interfAttributes = new ArrayList<>();
-    }
-    else {
+    if(nodeAttributes != null) {
       interfAttributes = new ArrayList<>();
       String[] arr = nodeAttributes.split(";");
       for (String s : arr) {
         ASTCDAttribute cdAttr = createASTCDAttribute(s);
         interfAttributes.add(cdAttr);
       }
+    } else {
+      interfAttributes = new ArrayList<>();
     }
-    List<ASTCDMethod> interfMethods = new ArrayList<>();
+    
+    List<ASTCDMethod> interfMethods;
     String nodeOperations = node.getOperations();
-    String[] methodArr = nodeOperations.split(";");
-    if (nodeOperations.equals("") || nodeOperations == null) {
+    if(nodeOperations != null) {
       interfMethods = new ArrayList<>();
-    }
-    else {
-      interfMethods = new ArrayList<>();
+      String[] methodArr = nodeOperations.split(";");
       for (String s : methodArr) {
         s = s.replace("\n", "");
         ASTCDMethod method = createASTCDMethod(s);
         interfMethods.add(method);
       }
+    } else {
+      interfMethods = new ArrayList<>();
     }
     
     ASTCDInterface retInterf = cd4aFactory.createASTCDInterface(modifier, interfName, interfaces, interfAttributes, interfMethods);
@@ -233,10 +243,7 @@ public class CD4APlugin implements MontiCorePlugIn {
     
     List<ASTCDEnumConstant> enumConstants;
     String nodeAttributes = node.getAttributes();
-    if (nodeAttributes.equals("") || nodeAttributes == null) {
-      enumConstants = new ArrayList<>();
-    }
-    else {
+    if(nodeAttributes != null) {
       enumConstants = new ArrayList<>();
       String[] arr = nodeAttributes.split(",");
       for (String s : arr) {
@@ -244,17 +251,14 @@ public class CD4APlugin implements MontiCorePlugIn {
         ASTCDEnumConstant enomConst = cd4aFactory.createASTCDEnumConstant(s, enomParams);
         enumConstants.add(enomConst);
       }
+    } else {
+      enumConstants = new ArrayList<>();
     }
     
     String nodeOperations = node.getOperations();
-    String[] methodArr = nodeOperations.split(";");
     List<ASTCDConstructor> enumConstructors;
-    
-    // Constructors of the class if present else empty list
-    if (nodeOperations.equals("") || nodeOperations == null) {
-      enumConstructors = new ArrayList<>();
-    }
-    else {
+    if(nodeOperations != null) {
+      String[] methodArr = nodeOperations.split(";");
       enumConstructors = new ArrayList<>();
       for (String s : methodArr) {
         if (s.contains(enumName)) {
@@ -262,13 +266,13 @@ public class CD4APlugin implements MontiCorePlugIn {
           enumConstructors.add(constructor);
         }
       }
+    } else {
+      enumConstructors = new ArrayList<>();
     }
     
     List<ASTCDMethod> enumMethods;
-    if (nodeOperations.equals("") || nodeOperations == null) {
-      enumMethods = new ArrayList<>();
-    }
-    else {
+    if(nodeOperations != null) {
+      String[] methodArr = nodeOperations.split(";");
       enumMethods = new ArrayList<>();
       for (String s : methodArr) {
         s = s.replace("\n", "");
@@ -277,6 +281,8 @@ public class CD4APlugin implements MontiCorePlugIn {
           enumMethods.add(method);
         }
       }
+    } else {
+      enumMethods = new ArrayList<>();
     }
     
     ASTCDEnum enom = cd4aFactory.createASTCDEnum(modifier, enumName, interfaces, enumConstants, enumConstructors, enumMethods);
@@ -313,26 +319,22 @@ public class CD4APlugin implements MontiCorePlugIn {
     // Attributes of the class if present else empty list
     List<ASTCDAttribute> clazzAttributes;
     String nodeAttributes = node.getAttributes();
-    if (nodeAttributes.equals("") || nodeAttributes == null) {
-      clazzAttributes = new ArrayList<>();
-    }
-    else {
+    if(nodeAttributes != null) {
       clazzAttributes = new ArrayList<>();
       String[] arr = nodeAttributes.split(";");
       for (String s : arr) {
         ASTCDAttribute cdAttr = createASTCDAttribute(s);
         clazzAttributes.add(cdAttr);
       }
+    } else {
+      clazzAttributes = new ArrayList<>();
     }
     
     String nodeOperations = node.getOperations();
     
     // Constructors of the class if present else empty list
     List<ASTCDConstructor> clazzConstructors;
-    if (nodeOperations.equals("") || nodeOperations == null) {
-      clazzConstructors = new ArrayList<>();
-    }
-    else {
+    if(nodeOperations != null) {
       clazzConstructors = new ArrayList<>();
       String[] methodArr = nodeOperations.split(";");
       for (String s : methodArr) {
@@ -341,14 +343,13 @@ public class CD4APlugin implements MontiCorePlugIn {
           clazzConstructors.add(constructor);
         }
       }
+    } else {
+      clazzConstructors = new ArrayList<>();
     }
     
     // Methods of the class if present else empty list
     List<ASTCDMethod> clazzMethods;
-    if (nodeOperations.equals("") || nodeOperations == null) {
-      clazzMethods = new ArrayList<>();
-    }
-    else {
+    if(nodeOperations != null) {
       clazzMethods = new ArrayList<>();
       String[] methodArr = nodeOperations.split(";");
       for (String s : methodArr) {
@@ -358,6 +359,8 @@ public class CD4APlugin implements MontiCorePlugIn {
           clazzMethods.add(method);
         }
       }
+    } else {
+      clazzMethods = new ArrayList<>();
     }
     
     ASTCDClass retClass;
@@ -396,9 +399,10 @@ public class CD4APlugin implements MontiCorePlugIn {
         ASTType typeOfAttr = typeResult.get();
         
         ASTCDParameter constructParam;
-        if(a.contains("...")) {
+        if (a.contains("...")) {
           constructParam = cd4aFactory.createASTCDParameter(typeOfAttr, attrName, true);
-        } else {
+        }
+        else {
           constructParam = cd4aFactory.createASTCDParameter(typeOfAttr, attrName, false);
         }
         constructParams.add(constructParam);
@@ -470,9 +474,10 @@ public class CD4APlugin implements MontiCorePlugIn {
         ASTType typeOfAttr = typeResult.get();
         
         ASTCDParameter methodParam;
-        if(a.contains("...")) {
+        if (a.contains("...")) {
           methodParam = cd4aFactory.createASTCDParameter(typeOfAttr, attrName, true);
-        } else {
+        }
+        else {
           methodParam = cd4aFactory.createASTCDParameter(typeOfAttr, attrName, false);
         }
         methodParams.add(methodParam);
@@ -518,6 +523,102 @@ public class CD4APlugin implements MontiCorePlugIn {
     return cdAttr;
   }
   
+  @SuppressWarnings("static-access")
+  private ASTCDAssociation createASTCDAssociation(Edge e) {
+    // Associations müssen immer einen Namen haben sonst Fehler !!!
+    ASTStereotype stereotype = null;
+    String name = "";
+    ASTModifier leftModifier = cd4aFactory.createASTModifier();
+    ASTCardinality leftCardinality;
+    
+    String leftNodeName = e.getStartNode().getTitle();
+    String rightNodeName = e.getEndNode().getTitle();
+    List<String> leftNameList = new ArrayList<>();
+    List<String> rightNameList = new ArrayList<>();
+    leftNameList.add(leftNodeName);
+    rightNameList.add(rightNodeName);
+    
+    ASTQualifiedName leftReferenceName = typesFactory.createASTQualifiedName(leftNameList);
+    ASTCDQualifier leftQualifier = null;
+    
+    // roles are not supported by OctoUML!
+    String leftRole = "";
+    String rightRole = "";
+    
+    // qualifier are not supported by OctoUML!
+    ASTCDQualifier rightQualifier = null;
+    
+    ASTQualifiedName rightReferenceName = typesFactory.createASTQualifiedName(rightNameList);
+    
+    ASTCardinality rightCardinality;
+    ASTModifier rightModifier = cd4aFactory.createASTModifier();
+    boolean r__association = false;
+    boolean r__composition = false;
+    boolean r__derived = false;
+    boolean leftToRight = false;
+    boolean rightToLeft = false;
+    boolean bidirectional = false;
+    boolean unspecified = false;
+    
+    name = ((AbstractEdge)e).getLabel();
+    
+    // TODO Was machen wenn keine Multiplicity gemalt wurde
+    
+    String leftCard = ((AbstractEdge)e).getStartMultiplicity();
+    if(leftCard.equals("*")) {
+      leftCardinality = cd4aFactory.createASTCardinality(true, false, false, false);
+    } else if(leftCard.equals("1")) {
+      leftCardinality = cd4aFactory.createASTCardinality(false, true, false, false);
+    } else if(leftCard.equals("1..*")) {
+      leftCardinality = cd4aFactory.createASTCardinality(false, false, true, false);
+    } else {
+      leftCardinality = cd4aFactory.createASTCardinality(false, false, false, true);
+    }
+    
+    String rightCard = ((AbstractEdge)e).getEndMultiplicity();
+    if(rightCard.equals("*")) {
+      rightCardinality = cd4aFactory.createASTCardinality(true, false, false, false);
+    } else if(rightCard.equals("1")) {
+      rightCardinality = cd4aFactory.createASTCardinality(false, true, false, false);
+    } else if(rightCard.equals("1..*")) {
+      rightCardinality = cd4aFactory.createASTCardinality(false, false, true, false);
+    } else {
+      rightCardinality = cd4aFactory.createASTCardinality(false, false, false, true);
+    }
+    
+    if (e instanceof AssociationEdge) {
+      r__association = true;
+    }
+    
+    if (e instanceof AggregationEdge) {
+      // so nicht ganz unterstützt in CD4A
+      // in der Logik ersetzbar durch Association
+      r__association = true;
+    }
+    
+    if (e instanceof CompositionEdge) {
+      r__composition = true;
+    }
+    
+    Direction direc = ((AbstractEdge)e).getDirection();
+    if(direc == Direction.NO_DIRECTION) {
+      unspecified = true;
+    }
+    if(direc == Direction.START_TO_END) {
+      leftToRight = true;
+    }
+    if(direc == Direction.END_TO_START) {
+      rightToLeft = true;
+    }
+    if(direc == Direction.BIDIRECTIONAL) {
+      bidirectional = true;
+    }
+    
+    ASTCDAssociation assoc = cd4aFactory.createASTCDAssociation(stereotype, name, leftModifier, leftCardinality, leftReferenceName, leftQualifier, leftRole, rightRole, rightQualifier, rightReferenceName, rightCardinality, rightModifier, r__association, r__composition, r__derived, leftToRight, rightToLeft, bidirectional, unspecified);
+    
+    return assoc;
+  }
+  
   @Override
   public List<String> check(ASTNode node) {
     // TODO Auto-generated method stub
@@ -540,6 +641,7 @@ public class CD4APlugin implements MontiCorePlugIn {
   public String getFlagName() {
     return "CD";
   }
+  
   
   @Override
   public void addUMLFlag(String name) {

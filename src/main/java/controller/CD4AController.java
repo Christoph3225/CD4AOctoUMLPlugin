@@ -3,7 +3,6 @@ package controller;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.controlsfx.control.Notifications;
@@ -11,15 +10,18 @@ import org.controlsfx.control.Notifications;
 import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.umlcd4a.cd4analysis._ast.ASTCDCompilationUnit;
 import de.monticore.umlcd4a.prettyprint.CDPrettyPrinterConcreteVisitor;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
-import model.Graph;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import model.Sketch;
-import model.edges.Edge;
-import model.edges.InheritanceEdge;
 import plugin.CD4APlugin;
 import util.commands.CompoundCommand;
 import util.commands.MoveGraphElementCommand;
@@ -33,6 +35,7 @@ public class CD4AController extends AbstractDiagramController {
   
   CD4APlugin plugin = new CD4APlugin();
   private String modelName;
+  private ASTCDCompilationUnit unit;
   
   @FXML
   public void initialize() {
@@ -41,6 +44,7 @@ public class CD4AController extends AbstractDiagramController {
     initDrawPaneActions();
     validateBtn.setDisable(true);
     generateBtn.setDisable(true);
+    initErrorLog();
   }
   
   void initDrawPaneActions() {
@@ -497,7 +501,7 @@ public class CD4AController extends AbstractDiagramController {
     validateBtn.setOnAction(event -> {
       //test(getGraphModel());
       
-      ASTCDCompilationUnit unit = plugin.shapeToAST(getGraphModel(), modelName);
+      unit = plugin.shapeToAST(getGraphModel(), modelName);
       IndentPrinter i = new IndentPrinter();
       CDPrettyPrinterConcreteVisitor prettyprinter = new CDPrettyPrinterConcreteVisitor(i);
       
@@ -511,16 +515,32 @@ public class CD4AController extends AbstractDiagramController {
       }
       
     });
+    
+    generateBtn.setOnAction(event -> {
+      boolean generateSuccess = plugin.generateCode(unit, "");
+    });
   }
   
-  private void test(Graph g) {
-    List<Edge> edges = g.getAllEdges();
-    for(Edge e : edges) {
-      if(e instanceof InheritanceEdge) {
-        System.out.println("StartNode: " + e.getStartNode().getTitle());
-        System.out.println("EndNode: " + e.getEndNode().getTitle());
-      }
-    }
+  public void initErrorLog() {
+    //TODO
+    Stage primaryStage = new Stage();
+    primaryStage.setTitle("Hello World!");
+    Button btn = new Button();
+    btn.setText("Say 'Hello World'");
+    btn.setOnAction(new EventHandler<ActionEvent>() {
+
+        @Override
+        public void handle(ActionEvent event) {
+            System.out.println("Hello World!");
+        }
+    });
+    primaryStage.initOwner(getStage());
+    primaryStage.initModality(Modality.WINDOW_MODAL);
+    
+    StackPane root = new StackPane();
+    root.getChildren().add(btn);
+    primaryStage.setScene(new Scene(root, 300, 250));
+    primaryStage.show();
   }
   
   @FXML
