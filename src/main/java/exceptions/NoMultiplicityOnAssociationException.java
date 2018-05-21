@@ -7,19 +7,19 @@ import model.nodes.AbstractNode;
 import model.nodes.Node;
 import plugin.MontiCoreException;
 
-public class MethodReturnTypeMissingException implements MontiCoreException {
+public class NoMultiplicityOnAssociationException implements MontiCoreException {
   private AbstractNode currentNode;
-  private ExceptionType type = ExceptionType.METHOD_RETURNTYPE_MISSING;
+  private ExceptionType type = ExceptionType.NO_MULTIPLITY_SET;
   private Pane currentPane;
   
-  public MethodReturnTypeMissingException(Node node){
+  public NoMultiplicityOnAssociationException(Node node){
       this.currentNode = (AbstractNode) node;
       this.setPane();
   }
 
   @Override
   public String getContentMessage() {
-      return "Method return type is missing!";
+      return "No multiplicity was set!";
   }
 
   public void setType(ExceptionType t){
@@ -32,13 +32,13 @@ public class MethodReturnTypeMissingException implements MontiCoreException {
   
   @Override
   public Pane getContentPane() {
-	  return this.currentPane;
+    return this.currentPane;
   }
   
   private void setPane() {
-	  currentPane = new Pane();
-	  Label lbl = new Label(getContentMessage());
-	  currentPane.getChildren().add(lbl);
+    currentPane = new Pane();
+    Label lbl = new Label(getContentMessage());
+    currentPane.getChildren().add(lbl);
   }
   
   public AbstractNode getNode(){
@@ -48,5 +48,4 @@ public class MethodReturnTypeMissingException implements MontiCoreException {
   public void setNode(AbstractNode n){
       this.currentNode = n;
   }
-  
 }

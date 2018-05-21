@@ -3,40 +3,64 @@ package controller;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.controlsfx.control.Notifications;
+import org.controlsfx.control.PopOver;
 
 import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.umlcd4a.cd4analysis._ast.ASTCDCompilationUnit;
 import de.monticore.umlcd4a.prettyprint.CDPrettyPrinterConcreteVisitor;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import exceptions.AssocLeftRefNameMissingException;
+import exceptions.AssocRightRefNameMissingException;
+import exceptions.CD4APluginErrorLog;
+import exceptions.ClassAttributeNameMissingException;
+import exceptions.ClassAttributeTypeMissingException;
+import exceptions.ClassDiagramNameMissingException;
+import exceptions.ClassNameMissingException;
+import exceptions.CodeGenerationException;
+import exceptions.ConstructorNameMissingException;
+import exceptions.EnumConstantNameMissingException;
+import exceptions.EnumNameMissingException;
+import exceptions.InterfaceNameMissingException;
+import exceptions.MethodNameMissingException;
+import exceptions.MethodParameterNameMissingException;
+import exceptions.MethodParameterTypeMissingException;
+import exceptions.MethodReturnTypeMissingException;
+import exceptions.NoMultiplicityOnAssociationException;
+import exceptions.PackageNameMissingException;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
+import javafx.scene.layout.VBox;
+import model.Graph;
 import model.Sketch;
+import model.edges.AbstractEdge;
+import model.edges.Edge;
 import plugin.CD4APlugin;
+import plugin.MontiCoreException;
 import util.commands.CompoundCommand;
 import util.commands.MoveGraphElementCommand;
 import view.nodes.AbstractNodeView;
 import view.nodes.PackageNodeView;
 
 public class CD4AController extends AbstractDiagramController {
-  // comment for succesfull push
-
-  @FXML
-  Button validateBtn;
   
-  CD4APlugin plugin = new CD4APlugin();
-  private String modelName;
+  @FXML
+  Button showErrorLogBtn, editInfoBtn;
+  @FXML
+  Label packageLbl, cdNameLbl, importLbl;
+  CD4APlugin plugin = CD4APlugin.getInstance();
+  private String packageName, modelName, imports;
   private ASTCDCompilationUnit unit;
+  
+  private CD4APluginErrorLog errorLog = CD4APluginErrorLog.getInstance();
+  private int errorCounter = 0;
   
   @FXML
   public void initialize() {
@@ -45,12 +69,34 @@ public class CD4AController extends AbstractDiagramController {
     initDrawPaneActions();
     validateBtn.setDisable(true);
     generateBtn.setDisable(true);
-    initErrorLog();
   }
   
   @Override
   public String getTabControllerName() {
     return "CD4A Class diagram";
+  }
+  
+  private void initContainerInfo() {
+	List<String> infoList = new ArrayList<>();
+	infoList.add(packageName);
+	infoList.add(imports);
+	infoList.add(modelName);
+	List<String> containerInfo = plugin.showContainerInfoDialog(getStage(), infoList);
+	packageName = containerInfo.get(0);
+	imports = containerInfo.get(1);
+	modelName = containerInfo.get(2);
+	packageLbl.setText("package " + packageName + ";");
+	if(!(imports == null)) {
+		String[] arr = imports.split(";");
+		String allImports = "";
+		for(int i=0; i<arr.length; i++) {
+			allImports += "import " + arr[i] + "; ";
+		}
+		importLbl.setText(allImports);
+	} else {
+		importLbl.setText("");
+	}
+	cdNameLbl.setText("classdiagram " + modelName + " {");
   }
   
   void initDrawPaneActions() {
@@ -487,11 +533,12 @@ public class CD4AController extends AbstractDiagramController {
     redoBtn.setOnAction(event -> undoManager.redoCommand());
     deleteBtn.setOnAction(event -> deleteSelected());
     recognizeBtn.setOnAction(event -> {
-      modelName = plugin.showContainerInfoDialog(getStage()).get(0);
-      plugin.addUMLFlag(modelName);
+      checkSketchErrors(getGraphModel());
       recognizeController.recognize(selectedSketches);
-      validateBtn.setDisable(false);
-      generateBtn.setDisable(false);
+      if(errorCounter == 0) {
+    	  validateBtn.setDisable(false);
+      }
+      //Notifications.create().title("Recognization").text("Recognization of the graph successfull.").showInformation();
     });
     voiceBtn.setOnAction(event -> {
       if (voiceController.voiceEnabled) {
@@ -503,50 +550,143 @@ public class CD4AController extends AbstractDiagramController {
       voiceController.onVoiceButtonClick();
     });
     
-    // TODO set Actions of new Buttons via CD4APlugin
+    editInfoBtn.setOnAction(event -> {
+      initContainerInfo();
+    });
+    
+    showErrorLogBtn.setOnAction(event -> {
+      showErrorLog();
+    });
+    
     validateBtn.setOnAction(event -> {
-      //test(getGraphModel());
-      
-      unit = plugin.shapeToAST(getGraphModel(), modelName);
-      IndentPrinter i = new IndentPrinter();
-      CDPrettyPrinterConcreteVisitor prettyprinter = new CDPrettyPrinterConcreteVisitor(i);
-      
-      //TODO Pfad richtig setzen
-      try {
-        String path = "/Users/Christoph/Desktop/";
-        FileUtils.writeStringToFile(new File(path + modelName + ".cd"), prettyprinter.prettyprint(unit));
+      if(errorCounter == 0) {
+    	  List<String> containerInfo = new ArrayList<>();
+          containerInfo.add(packageName);
+          containerInfo.add(imports);
+          containerInfo.add(modelName);
+          unit = plugin.shapeToAST(getGraphModel(), containerInfo);
+          IndentPrinter i = new IndentPrinter();
+          CDPrettyPrinterConcreteVisitor prettyprinter = new CDPrettyPrinterConcreteVisitor(i);
+          
+          try {
+            String path = plugin.getUsageFolderPath() + "/src/main/resources/classdiagram/";
+            FileUtils.writeStringToFile(new File(path + modelName + ".cd"), prettyprinter.prettyprint(unit));
+          }
+          catch (IOException e) {
+            e.printStackTrace();
+          }
       }
-      catch (IOException e) {
-        e.printStackTrace();
+      
+      // remove existing corresponding errors to check if they were corrected
+      for(MontiCoreException ex : errorLog.getAllLogs()) {
+    	  if(ex instanceof AssocLeftRefNameMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+    	  if(ex instanceof AssocRightRefNameMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+    	  if(ex instanceof ClassAttributeNameMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+    	  if(ex instanceof ClassAttributeTypeMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+    	  if(ex instanceof ClassNameMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+    	  if(ex instanceof ConstructorNameMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+    	  if(ex instanceof EnumConstantNameMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+    	  if(ex instanceof EnumNameMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+    	  if(ex instanceof InterfaceNameMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+    	  if(ex instanceof MethodNameMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+    	  if(ex instanceof MethodParameterNameMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+    	  if(ex instanceof MethodParameterTypeMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+    	  if(ex instanceof MethodReturnTypeMissingException) {
+    		  errorLog.getAllLogs().remove(ex);
+    	  }
+      }
+      
+      List<MontiCoreException> astErrorList = plugin.check(unit);
+      for(MontiCoreException ex : astErrorList) {
+    	  errorLog.addLog(ex);
+      }
+      errorCounter = errorLog.getAllLogs().size();
+	  showErrorLogBtn.setText("Error Log (" + errorCounter + ")");
+      
+      if(errorCounter == 0) {
+    	  generateBtn.setDisable(false);
       }
       
     });
     
     generateBtn.setOnAction(event -> {
-      boolean generateSuccess = plugin.generateCode(unit, "");
+      boolean generateSuccess = plugin.generateCode(unit, plugin.getUsageFolderPath() + "/src/test/java/");
+      if(generateSuccess) {
+    	//Notifications.create().title("Code Generator").text("Code generation was successfull.").showInformation();
+      } else {
+    	  errorLog.addLog(new CodeGenerationException(null));
+      }
     });
   }
   
-  public void initErrorLog() {
-    //TODO
-    Stage primaryStage = new Stage();
-    primaryStage.setTitle("Hello World!");
-    Button btn = new Button();
-    btn.setText("Say 'Hello World'");
-    btn.setOnAction(new EventHandler<ActionEvent>() {
-
-        @Override
-        public void handle(ActionEvent event) {
-            System.out.println("Hello World!");
-        }
-    });
-    primaryStage.initOwner(getStage());
-    primaryStage.initModality(Modality.WINDOW_MODAL);
-    
-    StackPane root = new StackPane();
-    root.getChildren().add(btn);
-    primaryStage.setScene(new Scene(root, 300, 250));
-    primaryStage.show();
+  private void checkSketchErrors(Graph g) {
+	  // remove all existing corresponding exceptions for checking if they are corrected
+	  for(MontiCoreException ex : errorLog.getAllLogs()) {
+		  if(ex instanceof PackageNameMissingException) {
+			  errorLog.getAllLogs().remove(ex);
+		  }
+		  if(ex instanceof ClassDiagramNameMissingException) {
+			  errorLog.getAllLogs().remove(ex);
+		  }
+		  if(ex instanceof NoMultiplicityOnAssociationException) {
+			  errorLog.getAllLogs().remove(ex);
+		  }
+	  }
+	  
+	  for(Edge e : g.getAllEdges()) {
+		  AbstractEdge abstrEdge = (AbstractEdge) e;
+		  if(abstrEdge.getStartMultiplicity() == null) {
+			 errorLog.addLog(new NoMultiplicityOnAssociationException(abstrEdge.getStartNode()));
+		  }
+		  if(abstrEdge.getEndMultiplicity() == null) {
+			 errorLog.addLog(new NoMultiplicityOnAssociationException(abstrEdge.getEndNode()));
+		  }
+	  }
+	  if(packageName == null) {
+		  errorLog.addLog(new PackageNameMissingException(null));
+	  }
+	  if(modelName == null) {
+		  errorLog.addLog(new ClassDiagramNameMissingException(null));
+	  }
+	  errorCounter = errorLog.getAllLogs().size();
+	  showErrorLogBtn.setText("Error Log (" + errorCounter + ")");
+  }
+  
+  private void showErrorLog() {
+    PopOver pop = new PopOver();
+	if(errorLog.getAllLogs().size() > 0) {
+		VBox box = new VBox();
+		for(MontiCoreException ex : errorLog.getAllLogs()) {
+			box.getChildren().add(ex.getContentPane());
+		}
+		pop.setContentNode(box);
+	}
+	
+	pop.show(showErrorLogBtn);
   }
   
   @FXML

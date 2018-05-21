@@ -29,7 +29,7 @@ public class CreateAssociationTest {
   
   @Before
   public void initTest() {
-    plugin = new CD4APlugin();
+    plugin = CD4APlugin.getInstance();
   }
   
   @Test
@@ -51,7 +51,14 @@ public class CreateAssociationTest {
     graph.addNode(node2, false);
     graph.addEdge(edge, false);
     
-    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, modelname);
+    String packageName = "cd4aplugin";
+    String imports = "";
+    List<String> containerInfo = new ArrayList<>();
+    containerInfo.add(packageName);
+    containerInfo.add(imports);
+    containerInfo.add(modelname);
+    
+    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, containerInfo);
     IndentPrinter i = new IndentPrinter();
     CDPrettyPrinterConcreteVisitor prettyprinter = new CDPrettyPrinterConcreteVisitor(i);
     System.out.println(prettyprinter.prettyprint(unit));

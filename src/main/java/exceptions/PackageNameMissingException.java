@@ -1,25 +1,26 @@
 package exceptions;
 
 import exceptions.CD4APluginErrorLog.ExceptionType;
-import javafx.scene.control.Label;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
+import javafx.scene.control.*;
 import model.nodes.AbstractNode;
 import model.nodes.Node;
 import plugin.MontiCoreException;
 
-public class MethodReturnTypeMissingException implements MontiCoreException {
-  private AbstractNode currentNode;
-  private ExceptionType type = ExceptionType.METHOD_RETURNTYPE_MISSING;
-  private Pane currentPane;
+public class PackageNameMissingException implements MontiCoreException {
   
-  public MethodReturnTypeMissingException(Node node){
+  private AbstractNode currentNode;
+  private ExceptionType type = ExceptionType.PACKAGE_NAME_MISSING;
+  private Pane currentPane;
+
+  public PackageNameMissingException(Node node){
       this.currentNode = (AbstractNode) node;
       this.setPane();
   }
 
   @Override
   public String getContentMessage() {
-      return "Method return type is missing!";
+      return "Package name is missing!";
   }
 
   public void setType(ExceptionType t){
@@ -32,15 +33,16 @@ public class MethodReturnTypeMissingException implements MontiCoreException {
   
   @Override
   public Pane getContentPane() {
-	  return this.currentPane;
+    return this.currentPane;
   }
   
   private void setPane() {
-	  currentPane = new Pane();
-	  Label lbl = new Label(getContentMessage());
-	  currentPane.getChildren().add(lbl);
+    currentPane = new Pane();
+    Label lbl = new Label(getContentMessage());
+    currentPane.getChildren().add(lbl);
   }
   
+  @Override
   public AbstractNode getNode(){
       return this.currentNode;
   }
@@ -48,5 +50,4 @@ public class MethodReturnTypeMissingException implements MontiCoreException {
   public void setNode(AbstractNode n){
       this.currentNode = n;
   }
-  
 }

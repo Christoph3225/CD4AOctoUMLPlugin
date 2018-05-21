@@ -24,7 +24,7 @@ public class CreateClassTest {
   
   @Before
   public void initTest() {
-    plugin = new CD4APlugin();
+	  plugin = CD4APlugin.getInstance();
     typeParser = new TypesParser();
   }
   
@@ -36,7 +36,14 @@ public class CreateClassTest {
     node.setTitle("Student");
     graph.addNode(node, false);
     
-    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, modelname);
+    String packageName = "cd4aplugin";
+    String imports = "";
+    List<String> containerInfo = new ArrayList<>();
+    containerInfo.add(packageName);
+    containerInfo.add(imports);
+    containerInfo.add(modelname);
+    
+    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, containerInfo);
     
     // create test result
     ASTModifier modifier = CD4AnalysisNodeFactory.createASTModifier(null, false, false, false, false, false, true, false);;
@@ -64,8 +71,14 @@ public class CreateClassTest {
     node.setAttributes("int age;");
     graph.addNode(node, false);
     
-    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, modelname);
+    String packageName = "cd4aplugin";
+    String imports = "";
+    List<String> containerInfo = new ArrayList<>();
+    containerInfo.add(packageName);
+    containerInfo.add(imports);
+    containerInfo.add(modelname);
     
+    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, containerInfo);
     
     // create test result
     ASTModifier modifier = CD4AnalysisNodeFactory.createASTModifier(null, false, false, false, false, false, true, false);;
@@ -109,7 +122,14 @@ public class CreateClassTest {
     node.setOperations("Student();");
     graph.addNode(node, false);
     
-    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, modelname);
+    String packageName = "cd4aplugin";
+    String imports = "";
+    List<String> containerInfo = new ArrayList<>();
+    containerInfo.add(packageName);
+    containerInfo.add(imports);
+    containerInfo.add(modelname);
+    
+    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, containerInfo);
     
     // create test result
     ASTModifier modifier = CD4AnalysisNodeFactory.createASTModifier(null, false, false, false, false, false, true, false);;
@@ -185,7 +205,14 @@ public class CreateClassTest {
     node.setOperations("int getAge();");
     graph.addNode(node, false);
     
-    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, modelname);
+    String packageName = "cd4aplugin";
+    String imports = "";
+    List<String> containerInfo = new ArrayList<>();
+    containerInfo.add(packageName);
+    containerInfo.add(imports);
+    containerInfo.add(modelname);
+    
+    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, containerInfo);
     
     // create test result
     ASTModifier modifier = CD4AnalysisNodeFactory.createASTModifier(null, false, false, false, false, false, true, false);;
@@ -288,7 +315,14 @@ public class CreateClassTest {
     node.setOperations("Student();");
     graph.addNode(node, false);
     
-    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, modelname);
+    String packageName = "cd4aplugin";
+    String imports = "";
+    List<String> containerInfo = new ArrayList<>();
+    containerInfo.add(packageName);
+    containerInfo.add(imports);
+    containerInfo.add(modelname);
+    
+    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, containerInfo);
     
     // create test result
     ASTModifier modifier = CD4AnalysisNodeFactory.createASTModifier(null, false, false, false, false, false, true, false);;
@@ -389,7 +423,14 @@ public class CreateClassTest {
     
     graph.addEdge(inherit, false);
     
-    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, modelname);
+    String packageName = "cd4aplugin";
+    String imports = "";
+    List<String> containerInfo = new ArrayList<>();
+    containerInfo.add(packageName);
+    containerInfo.add(imports);
+    containerInfo.add(modelname);
+    
+    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, containerInfo);
     
     // create test result
     ASTModifier modifier = CD4AnalysisNodeFactory.createASTModifier(null, false, false, false, false, false, true, false);;
@@ -433,7 +474,14 @@ public class CreateClassTest {
     
     graph.addEdge(inherit, false);
     
-    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, modelname);
+    String packageName = "cd4aplugin";
+    String imports = "";
+    List<String> containerInfo = new ArrayList<>();
+    containerInfo.add(packageName);
+    containerInfo.add(imports);
+    containerInfo.add(modelname);
+    
+    ASTCDCompilationUnit unit = plugin.shapeToAST(graph, containerInfo);
     
     // create test result
     ASTModifier modifier = CD4AnalysisNodeFactory.createASTModifier(null, false, false, false, false, false, true, false);;

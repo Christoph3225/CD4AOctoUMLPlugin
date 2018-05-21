@@ -13,142 +13,162 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.paint.*?>
 
-<BorderPane fx:id="borderPane" fx:controller="controller.CD4AController" 
-	xmlns:fx="http://javafx.com/fxml"> 
-<!-- <BorderPane fx:id="borderPane" xmlns:fx="http://javafx.com/fxml">-->
+<BorderPane fx:id="borderPane" fx:controller="controller.CD4AController"
+	xmlns:fx="http://javafx.com/fxml">
+	<!-- <BorderPane fx:id="borderPane" xmlns:fx="http://javafx.com/fxml"> -->
 	<top>
 		<VBox>
-			<ToolBar fx:id="aToolBar" orientation="HORIZONTAL">
-				<HBox fx:id="umlBox">
-					<Button text="" fx:id="createBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/classw.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
-					<Button text="" fx:id="packageBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/packagew.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
-					<Button text="" fx:id="edgeBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/edgew.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
-					<Button text="" fx:id="drawBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/draww.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
+			<VBox>
+				<ToolBar fx:id="aToolBar" orientation="HORIZONTAL">
+					<HBox fx:id="umlBox">
+						<Button text="" fx:id="createBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/classw.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+						<Button text="" fx:id="packageBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/packagew.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+						<Button text="" fx:id="edgeBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/edgew.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+						<Button text="" fx:id="drawBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/draww.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+					</HBox>
+					<HBox fx:id="utilBox">
+						<Button text="" fx:id="selectBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/selectw.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+						<Button text="" fx:id="moveBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/movew.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+					</HBox>
+					<HBox fx:id="undoBox">
+						<Button text="" fx:id="deleteBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/deletew.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+						<Button text="" fx:id="undoBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/undow.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+						<Button text="" fx:id="redoBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/redow.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+					</HBox>
+					<HBox fx:id="recognizeBox">
+						<Button text="" fx:id="recognizeBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/recognizew.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+						<Button text="" fx:id="voiceBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/micw.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+						<Button text="" fx:id="validateBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/validatew.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+						<Button text="" fx:id="generateBtn">
+							<graphic>
+								<ImageView pickOnBounds="true" preserveRatio="true">
+									<image>
+										<Image url="/icons/generatew.png" />
+									</image>
+								</ImageView>
+							</graphic>
+						</Button>
+					</HBox>
+				</ToolBar>
+			</VBox>
+
+			<HBox>
+				<VBox prefWidth="1000.0">
+					<Label fx:id="packageLbl" text="package" />
+					<Label fx:id="importLbl" text="import "/>
+					<Label fx:id="cdNameLbl" text="classdiagram" />	
+				</VBox>
+				<HBox spacing="10">
+					<Button fx:id="editInfoBtn" text="Edit Diagram Info" />
+					<Button fx:id="showErrorLogBtn" text="Error Log" />
 				</HBox>
-				<HBox fx:id="utilBox">
-					<Button text="" fx:id="selectBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/selectw.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
-					<Button text="" fx:id="moveBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/movew.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
-				</HBox>
-				<HBox fx:id="undoBox">
-					<Button text="" fx:id="deleteBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/deletew.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
-					<Button text="" fx:id="undoBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/undow.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
-					<Button text="" fx:id="redoBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/redow.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
-				</HBox>
-				<HBox fx:id="recognizeBox">
-					<Button text="" fx:id="recognizeBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/recognizew.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
-					<Button text="" fx:id="voiceBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/micw.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
-					<Button text="" fx:id="validateBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/validatew.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
-					<Button text="" fx:id="generateBtn">
-						<graphic>
-							<ImageView pickOnBounds="true" preserveRatio="true">
-								<image>
-									<Image url="/icons/generatew.png" />
-								</image>
-							</ImageView>
-						</graphic>
-					</Button>
-				</HBox>
-			</ToolBar>
+			</HBox>
 		</VBox>
 	</top>
 	<bottom>
+	<VBox>
+		<HBox prefWidth="1000.0">
+				<Label fx:id="closingBracketLbl" text="  }" />	
+		</HBox>
 		<StackPane fx:id="infoPane">
+			
+				
 			<ToolBar fx:id="zoomPane">
 				<Pane HBox.hgrow="ALWAYS" />
 				<VBox alignment="CENTER">
@@ -160,6 +180,7 @@
 			<ColorPicker fx:id="colorPicker" StackPane.alignment="CENTER_LEFT" />
 			<Label fx:id="serverLabel" StackPane.alignment="CENTER_RIGHT" />
 		</StackPane>
+		</VBox>
 	</bottom>
 	<center>
 		<ScrollPane fx:id="scrollPane" pannable="true"
