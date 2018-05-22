@@ -21,7 +21,7 @@ public class CD4ACodeGenerator {
   private CD4ACodeGenerator() {
     
   }
-
+  
   public static CD4ACodeGenerator getInstance() {
     return singleTonGenerator;
   }
@@ -32,15 +32,15 @@ public class CD4ACodeGenerator {
     List<ASTCDInterface> cdInterfaces = cdDef.getCDInterfaces();
     List<ASTCDEnum> cdEnums = cdDef.getCDEnums();
     
-    for(ASTCDClass c : cdClasses) {
+    for (ASTCDClass c : cdClasses) {
       generateClass(c, outputPath);
     }
     
-    for(ASTCDInterface i : cdInterfaces) {
+    for (ASTCDInterface i : cdInterfaces) {
       generateInterface(i, outputPath);
     }
     
-    for(ASTCDEnum e : cdEnums) {
+    for (ASTCDEnum e : cdEnums) {
       generateEnum(e, outputPath);
     }
     
@@ -53,40 +53,42 @@ public class CD4ACodeGenerator {
     String className = c.getName();
     
     String firstLine;
-    if(c.printSuperClass().equals(EMPTY_STRING)) {
-      if(c.printInterfaces().equals(EMPTY_STRING)) {
+    if (c.printSuperClass().equals(EMPTY_STRING)) {
+      if (c.printInterfaces().equals(EMPTY_STRING)) {
         firstLine = "public class " + className + " { \n";
-      } else {
+      }
+      else {
         firstLine = "public class " + className + " implements " + c.printInterfaces() + " { \n";
       }
-    } else {
-      if(c.printInterfaces().equals(EMPTY_STRING)) {
+    }
+    else {
+      if (c.printInterfaces().equals(EMPTY_STRING)) {
         firstLine = "public class " + className + " extends " + c.printSuperClass() + " { \n";
-      } else {
-        firstLine = "public class " + className + " extends " + c.printSuperClass() +" implements " + c.printInterfaces() + " { \n";
+      }
+      else {
+        firstLine = "public class " + className + " extends " + c.printSuperClass() + " implements " + c.printInterfaces() + " { \n";
       }
     }
     
     code += firstLine;
     
     String attrLine;
-    for(ASTCDAttribute a : c.getCDAttributes()) {
-      attrLine = generateAttribute(a);
+    for (ASTCDAttribute a : c.getCDAttributes()) {
+      attrLine = generateAttribute(a, true);
       code += attrLine;
     }
     
     String constrLine;
-    for(ASTCDConstructor con : c.getCDConstructors()) {
+    for (ASTCDConstructor con : c.getCDConstructors()) {
       constrLine = generateConstructor(con);
       code += constrLine;
     }
     
     String methodLine;
-    for(ASTCDMethod m : c.getCDMethods()) {
+    for (ASTCDMethod m : c.getCDMethods()) {
       methodLine = generateMethod(m);
       code += methodLine;
     }
-    
     
     try {
       FileUtils.writeStringToFile(new File(path + className + ".java"), code);
@@ -96,7 +98,7 @@ public class CD4ACodeGenerator {
     }
   }
   
-  private String generateAttribute(ASTCDAttribute a) {
+  private String generateAttribute(ASTCDAttribute a, boolean isClass) {
     String result = "";
     
     String attrName = a.getName();
@@ -104,21 +106,21 @@ public class CD4ACodeGenerator {
     // generate attribute
     String attr = a.printType() + " " + attrName + "; \n \n";
     
-    
-    // generate getter
     String getter = "";
-    String getHead = "public " + a.printType() + " " + "get" + (attrName.substring(0, 1).toUpperCase() + attrName.substring(1)) + "() {\n";
-    String getBody = "return this." + attrName + ";\n";
-    String getEnd = "} \n\n";
-    getter = getHead + getBody + getEnd;
-    
-    // generate setter
     String setter = "";
-    String setHead = "public void set" + (attrName.substring(0, 1).toUpperCase() + attrName.substring(1)) + "(" + a.printType() + " x) {\n";
-    String setBody = "this." + attrName + " = x;\n";
-    String setEnd = "} \n\n";
-    setter = setHead + setBody + setEnd;
-    
+    if (isClass) {
+      // generate getter
+      String getHead = "public " + a.printType() + " " + "get" + (attrName.substring(0, 1).toUpperCase() + attrName.substring(1)) + "() {\n";
+      String getBody = "return this." + attrName + ";\n";
+      String getEnd = "} \n\n";
+      getter = getHead + getBody + getEnd;
+      
+      // generate setter
+      String setHead = "public void set" + (attrName.substring(0, 1).toUpperCase() + attrName.substring(1)) + "(" + a.printType() + " x) {\n";
+      String setBody = "this." + attrName + " = x;\n";
+      String setEnd = "} \n\n";
+      setter = setHead + setBody + setEnd;
+    }
     result = attr + getter + setter;
     
     return result;
@@ -128,20 +130,22 @@ public class CD4ACodeGenerator {
     String result = "";
     
     String name = con.getName();
-    if(con.printParametersDecl().equals(EMPTY_STRING)) {
-      if(con.printThrowsDecl().equals(EMPTY_STRING)) {
+    if (con.printParametersDecl().equals(EMPTY_STRING)) {
+      if (con.printThrowsDecl().equals(EMPTY_STRING)) {
         result = "public " + name + "() { \n }\n";
-      } else {
+      }
+      else {
         result = "public " + name + "() throws " + con.printThrowsDecl() + "{ \n }\n";
       }
-    } else {
-      if(con.printThrowsDecl().equals(EMPTY_STRING)) {
+    }
+    else {
+      if (con.printThrowsDecl().equals(EMPTY_STRING)) {
         result = "public " + name + "(" + con.printParametersDecl() + ") { \n }\n";
-      } else {
+      }
+      else {
         result = "public " + name + "(" + con.printParametersDecl() + ") throws " + con.printThrowsDecl() + "{ \n }\n";
       }
     }
-    
     
     return result;
   }
@@ -151,16 +155,19 @@ public class CD4ACodeGenerator {
     
     String name = m.getName();
     
-    if(m.printParametersDecl().equals(EMPTY_STRING)) {
-      if(m.printThrowsDecl().equals(EMPTY_STRING)) {
+    if (m.printParametersDecl().equals(EMPTY_STRING)) {
+      if (m.printThrowsDecl().equals(EMPTY_STRING)) {
         result = "public " + m.printReturnType() + name + "() { \n }\n";
-      } else {
+      }
+      else {
         result = "public " + m.printReturnType() + name + "() throws " + m.printThrowsDecl() + "{ \n }\n";
       }
-    } else {
-      if(m.printThrowsDecl().equals(EMPTY_STRING)) {
+    }
+    else {
+      if (m.printThrowsDecl().equals(EMPTY_STRING)) {
         result = "public " + m.printReturnType() + name + "(" + m.printParametersDecl() + ") { \n }\n";
-      } else {
+      }
+      else {
         result = "public " + m.printReturnType() + name + "(" + m.printParametersDecl() + ") throws " + m.printThrowsDecl() + "{ \n }\n";
       }
     }
@@ -172,7 +179,27 @@ public class CD4ACodeGenerator {
     String code = "";
     String interfName = i.getName();
     
-    //TODO
+    String firstLine;
+    if (i.printInterfaces().equals(EMPTY_STRING)) {
+      firstLine = "public interface " + interfName + " { \n";
+    }
+    else {
+      firstLine = "public interface " + interfName + " implements " + i.printInterfaces() + " { \n";
+    }
+    
+    code += firstLine;
+    
+    String attrLine;
+    for (ASTCDAttribute a : i.getCDAttributes()) {
+      attrLine = generateAttribute(a, false);
+      code += attrLine;
+    }
+    
+    String methodLine;
+    for (ASTCDMethod m : i.getCDMethods()) {
+      methodLine = generateMethod(m);
+      code += methodLine;
+    }
     
     try {
       String generatePath = path + "/src/main/java/";
@@ -187,7 +214,15 @@ public class CD4ACodeGenerator {
     String code = "";
     String enumName = e.getName();
     
-    //TODO
+    String firstLine = "public enum " + enumName + " { \n";
+    code += firstLine;
+    
+    String contentLine = e.printEnumConstants();
+    
+    code += contentLine;
+    
+    String endLine = "}";
+    code += endLine;
     
     try {
       String generatePath = path + "/src/main/java/";
@@ -199,11 +234,12 @@ public class CD4ACodeGenerator {
   }
   
   public boolean wasSuccessfull() {
-    if(errorCounter == 0) {
+    if (errorCounter == 0) {
       return true;
-    } else {
+    }
+    else {
       return false;
     }
   }
-
+  
 }
