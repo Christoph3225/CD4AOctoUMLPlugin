@@ -27,8 +27,10 @@ import exceptions.MethodNameMissingException;
 import exceptions.MethodParameterNameMissingException;
 import exceptions.MethodParameterTypeMissingException;
 import exceptions.MethodReturnTypeMissingException;
+import generator.CD4ACodeGenerator;
 import javafx.stage.Stage;
 import misc.OctoPair;
+import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import model.Graph;
@@ -38,6 +40,7 @@ import model.edges.AbstractEdge.Direction;
 import model.nodes.AbstractNode;
 import model.nodes.ClassNode;
 import model.nodes.PackageNode;
+import view.nodes.AbstractNodeView;
 
 public class CD4APlugin implements MontiCorePlugIn {
 
@@ -47,6 +50,7 @@ public class CD4APlugin implements MontiCorePlugIn {
 	private String usageFolderPath;
 	private static final CD4APlugin singleTonPlugin = new CD4APlugin();
 	private List<OctoPair<GraphElement, ASTNode>> mapGraphAST = new ArrayList<>();
+	private List<OctoPair<GraphElement, Group>> mapNodeToView = new ArrayList<>();
 	
 	private CD4APlugin() {
 		
@@ -833,8 +837,13 @@ public class CD4APlugin implements MontiCorePlugIn {
 
 	@Override
 	public boolean generateCode(ASTNode node, String path) {
-		// TODO Auto-generated method stub
-		return false;
+		CD4ACodeGenerator cd4aGenerator = CD4ACodeGenerator.getInstance();
+		cd4aGenerator.generate((ASTCDCompilationUnit) node, path);
+		if(cd4aGenerator.wasSuccessfull()) {
+		  return true;
+		} else {
+		  return false;
+		}
 	}
 
 	@Override
@@ -893,6 +902,10 @@ public class CD4APlugin implements MontiCorePlugIn {
 
 	public void setUsageFolderPath(String usageFolderPath) {
 		this.usageFolderPath = usageFolderPath;
+	}
+	
+	public void mapViewToNode(Graph graph) {
+	  //TODO
 	}
 
 }

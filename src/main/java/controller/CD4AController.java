@@ -56,6 +56,7 @@ public class CD4AController extends AbstractDiagramController {
   Button showErrorLogBtn, editInfoBtn;
   @FXML
   Label packageLbl, cdNameLbl, importLbl;
+  
   CD4APlugin plugin = CD4APlugin.getInstance();
   private String packageName, modelName, imports;
   private ASTCDCompilationUnit unit;
@@ -539,6 +540,7 @@ public class CD4AController extends AbstractDiagramController {
       recognizeController.recognize(selectedSketches);
       if (errorCounter == 0) {
         validateBtn.setDisable(false);
+        plugin.mapViewToNode(getGraphModel());
         Notifications.create().title("Recognization").text("Recognization of the graph successfull.").showInformation();
       }
     });
@@ -637,7 +639,7 @@ public class CD4AController extends AbstractDiagramController {
     });
     
     generateBtn.setOnAction(event -> {
-      boolean generateSuccess = plugin.generateCode(unit, plugin.getUsageFolderPath() + "/src/test/java/");
+      boolean generateSuccess = plugin.generateCode(unit, plugin.getUsageFolderPath() + "/src/main/java/");
       if (generateSuccess) {
         Notifications.create().title("Code Generator").text("Code generation was successfull.").showInformation();
       }
