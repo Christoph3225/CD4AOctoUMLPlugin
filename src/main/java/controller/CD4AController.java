@@ -42,6 +42,7 @@ import model.Graph;
 import model.Sketch;
 import model.edges.AbstractEdge;
 import model.edges.Edge;
+import model.edges.InheritanceEdge;
 import plugin.CD4APlugin;
 import plugin.MontiCoreException;
 import util.commands.CompoundCommand;
@@ -77,26 +78,27 @@ public class CD4AController extends AbstractDiagramController {
   }
   
   private void initContainerInfo() {
-	List<String> infoList = new ArrayList<>();
-	infoList.add(packageName);
-	infoList.add(imports);
-	infoList.add(modelName);
-	List<String> containerInfo = plugin.showContainerInfoDialog(getStage(), infoList);
-	packageName = containerInfo.get(0);
-	imports = containerInfo.get(1);
-	modelName = containerInfo.get(2);
-	packageLbl.setText("package " + packageName + ";");
-	if(!(imports == null)) {
-		String[] arr = imports.split(";");
-		String allImports = "";
-		for(int i=0; i<arr.length; i++) {
-			allImports += "import " + arr[i] + "; ";
-		}
-		importLbl.setText(allImports);
-	} else {
-		importLbl.setText("");
-	}
-	cdNameLbl.setText("classdiagram " + modelName + " {");
+    List<String> infoList = new ArrayList<>();
+    infoList.add(packageName);
+    infoList.add(imports);
+    infoList.add(modelName);
+    List<String> containerInfo = plugin.showContainerInfoDialog(getStage(), infoList);
+    packageName = containerInfo.get(0);
+    imports = containerInfo.get(1);
+    modelName = containerInfo.get(2);
+    packageLbl.setText("package " + packageName + ";");
+    if (!(imports == null)) {
+      String[] arr = imports.split(";");
+      String allImports = "";
+      for (int i = 0; i < arr.length; i++) {
+        allImports += "import " + arr[i] + "; ";
+      }
+      importLbl.setText(allImports);
+    }
+    else {
+      importLbl.setText("");
+    }
+    cdNameLbl.setText("classdiagram " + modelName + " {");
   }
   
   void initDrawPaneActions() {
@@ -535,10 +537,10 @@ public class CD4AController extends AbstractDiagramController {
     recognizeBtn.setOnAction(event -> {
       checkSketchErrors(getGraphModel());
       recognizeController.recognize(selectedSketches);
-      if(errorCounter == 0) {
-    	  validateBtn.setDisable(false);
+      if (errorCounter == 0) {
+        validateBtn.setDisable(false);
+        Notifications.create().title("Recognization").text("Recognization of the graph successfull.").showInformation();
       }
-      //Notifications.create().title("Recognization").text("Recognization of the graph successfull.").showInformation();
     });
     voiceBtn.setOnAction(event -> {
       if (voiceController.voiceEnabled) {
@@ -559,134 +561,139 @@ public class CD4AController extends AbstractDiagramController {
     });
     
     validateBtn.setOnAction(event -> {
-      if(errorCounter == 0) {
-    	  List<String> containerInfo = new ArrayList<>();
-          containerInfo.add(packageName);
-          containerInfo.add(imports);
-          containerInfo.add(modelName);
-          unit = plugin.shapeToAST(getGraphModel(), containerInfo);
-          IndentPrinter i = new IndentPrinter();
-          CDPrettyPrinterConcreteVisitor prettyprinter = new CDPrettyPrinterConcreteVisitor(i);
-          
-          try {
-            String path = plugin.getUsageFolderPath() + "/src/main/resources/classdiagram/";
-            FileUtils.writeStringToFile(new File(path + modelName + ".cd"), prettyprinter.prettyprint(unit));
-          }
-          catch (IOException e) {
-            e.printStackTrace();
-          }
+      if (errorCounter == 0) {
+        List<String> containerInfo = new ArrayList<>();
+        containerInfo.add(packageName);
+        containerInfo.add(imports);
+        containerInfo.add(modelName);
+        unit = plugin.shapeToAST(getGraphModel(), containerInfo);
+        IndentPrinter i = new IndentPrinter();
+        CDPrettyPrinterConcreteVisitor prettyprinter = new CDPrettyPrinterConcreteVisitor(i);
+        
+        try {
+          String path = plugin.getUsageFolderPath() + "/src/main/resources/classdiagram/";
+          FileUtils.writeStringToFile(new File(path + modelName + ".cd"), prettyprinter.prettyprint(unit));
+        }
+        catch (IOException e) {
+          e.printStackTrace();
+        }
       }
       
       // remove existing corresponding errors to check if they were corrected
-      for(MontiCoreException ex : errorLog.getAllLogs()) {
-    	  if(ex instanceof AssocLeftRefNameMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
-    	  if(ex instanceof AssocRightRefNameMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
-    	  if(ex instanceof ClassAttributeNameMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
-    	  if(ex instanceof ClassAttributeTypeMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
-    	  if(ex instanceof ClassNameMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
-    	  if(ex instanceof ConstructorNameMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
-    	  if(ex instanceof EnumConstantNameMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
-    	  if(ex instanceof EnumNameMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
-    	  if(ex instanceof InterfaceNameMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
-    	  if(ex instanceof MethodNameMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
-    	  if(ex instanceof MethodParameterNameMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
-    	  if(ex instanceof MethodParameterTypeMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
-    	  if(ex instanceof MethodReturnTypeMissingException) {
-    		  errorLog.getAllLogs().remove(ex);
-    	  }
+      for (MontiCoreException ex : errorLog.getAllLogs()) {
+        if (ex instanceof AssocLeftRefNameMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
+        if (ex instanceof AssocRightRefNameMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
+        if (ex instanceof ClassAttributeNameMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
+        if (ex instanceof ClassAttributeTypeMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
+        if (ex instanceof ClassNameMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
+        if (ex instanceof ConstructorNameMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
+        if (ex instanceof EnumConstantNameMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
+        if (ex instanceof EnumNameMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
+        if (ex instanceof InterfaceNameMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
+        if (ex instanceof MethodNameMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
+        if (ex instanceof MethodParameterNameMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
+        if (ex instanceof MethodParameterTypeMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
+        if (ex instanceof MethodReturnTypeMissingException) {
+          errorLog.getAllLogs().remove(ex);
+        }
       }
       
       List<MontiCoreException> astErrorList = plugin.check(unit);
-      for(MontiCoreException ex : astErrorList) {
-    	  errorLog.addLog(ex);
+      for (MontiCoreException ex : astErrorList) {
+        errorLog.addLog(ex);
       }
       errorCounter = errorLog.getAllLogs().size();
-	  showErrorLogBtn.setText("Error Log (" + errorCounter + ")");
+      showErrorLogBtn.setText("Error Log (" + errorCounter + ")");
       
-      if(errorCounter == 0) {
-    	  generateBtn.setDisable(false);
+      if (errorCounter == 0) {
+        generateBtn.setDisable(false);
+        Notifications.create().title("Validation").text("Validation of the graph successfull.").showInformation();
       }
       
     });
     
     generateBtn.setOnAction(event -> {
       boolean generateSuccess = plugin.generateCode(unit, plugin.getUsageFolderPath() + "/src/test/java/");
-      if(generateSuccess) {
-    	//Notifications.create().title("Code Generator").text("Code generation was successfull.").showInformation();
-      } else {
-    	  errorLog.addLog(new CodeGenerationException(null));
+      if (generateSuccess) {
+        Notifications.create().title("Code Generator").text("Code generation was successfull.").showInformation();
+      }
+      else {
+        errorLog.addLog(new CodeGenerationException(null));
       }
     });
   }
   
   private void checkSketchErrors(Graph g) {
-	  // remove all existing corresponding exceptions for checking if they are corrected
-	  for(MontiCoreException ex : errorLog.getAllLogs()) {
-		  if(ex instanceof PackageNameMissingException) {
-			  errorLog.getAllLogs().remove(ex);
-		  }
-		  if(ex instanceof ClassDiagramNameMissingException) {
-			  errorLog.getAllLogs().remove(ex);
-		  }
-		  if(ex instanceof NoMultiplicityOnAssociationException) {
-			  errorLog.getAllLogs().remove(ex);
-		  }
-	  }
-	  
-	  for(Edge e : g.getAllEdges()) {
-		  AbstractEdge abstrEdge = (AbstractEdge) e;
-		  if(abstrEdge.getStartMultiplicity() == null) {
-			 errorLog.addLog(new NoMultiplicityOnAssociationException(abstrEdge.getStartNode()));
-		  }
-		  if(abstrEdge.getEndMultiplicity() == null) {
-			 errorLog.addLog(new NoMultiplicityOnAssociationException(abstrEdge.getEndNode()));
-		  }
-	  }
-	  if(packageName == null) {
-		  errorLog.addLog(new PackageNameMissingException(null));
-	  }
-	  if(modelName == null) {
-		  errorLog.addLog(new ClassDiagramNameMissingException(null));
-	  }
-	  errorCounter = errorLog.getAllLogs().size();
-	  showErrorLogBtn.setText("Error Log (" + errorCounter + ")");
+    // remove all existing corresponding exceptions for checking if they are
+    // corrected
+    for (MontiCoreException ex : errorLog.getAllLogs()) {
+      if (ex instanceof PackageNameMissingException) {
+        errorLog.getAllLogs().remove(ex);
+      }
+      if (ex instanceof ClassDiagramNameMissingException) {
+        errorLog.getAllLogs().remove(ex);
+      }
+      if (ex instanceof NoMultiplicityOnAssociationException) {
+        errorLog.getAllLogs().remove(ex);
+      }
+    }
+    
+    for (Edge e : g.getAllEdges()) {
+      AbstractEdge abstrEdge = (AbstractEdge) e;
+      if (!(abstrEdge instanceof InheritanceEdge)) {
+        if (abstrEdge.getStartMultiplicity() == null) {
+          errorLog.addLog(new NoMultiplicityOnAssociationException(abstrEdge.getStartNode()));
+        }
+        if (abstrEdge.getEndMultiplicity() == null) {
+          errorLog.addLog(new NoMultiplicityOnAssociationException(abstrEdge.getEndNode()));
+        }
+      }
+    }
+    if (packageName == null) {
+      errorLog.addLog(new PackageNameMissingException(null));
+    }
+    if (modelName == null) {
+      errorLog.addLog(new ClassDiagramNameMissingException(null));
+    }
+    errorCounter = errorLog.getAllLogs().size();
+    showErrorLogBtn.setText("Error Log (" + errorCounter + ")");
   }
   
   private void showErrorLog() {
     PopOver pop = new PopOver();
-	if(errorLog.getAllLogs().size() > 0) {
-		VBox box = new VBox();
-		for(MontiCoreException ex : errorLog.getAllLogs()) {
-			box.getChildren().add(ex.getContentPane());
-		}
-		pop.setContentNode(box);
-	}
-	
-	pop.show(showErrorLogBtn);
+    if (errorLog.getAllLogs().size() > 0) {
+      VBox box = new VBox();
+      for (MontiCoreException ex : errorLog.getAllLogs()) {
+        box.getChildren().add(ex.getContentPane());
+      }
+      pop.setContentNode(box);
+    }
+    
+    pop.show(showErrorLogBtn);
   }
   
   @FXML
