@@ -52,6 +52,8 @@ import view.nodes.PackageNodeView;
 
 public class CD4AController extends AbstractDiagramController {
   
+  // push success 
+
   @FXML
   Button showErrorLogBtn, editInfoBtn;
   @FXML
