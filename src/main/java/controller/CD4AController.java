@@ -660,7 +660,6 @@ public class CD4AController extends AbstractDiagramController {
       if(n.getTitle() == null) {
         errorLog.addLog(new NodeNameMissingException(n));
       }
-      System.out.println(n.getTitle());
     }
     for (Edge e : g.getAllEdges()) {
       AbstractEdge abstrEdge = (AbstractEdge) e;

@@ -118,10 +118,9 @@ public class CD4APlugin implements MontiCorePlugIn {
 			imports = new ArrayList<>();
 			String[] arr = allImports.split(";");
 			for (String s : arr) {
-				String[] arr2 = s.split(".");
 				List<String> createImportList = new ArrayList<>();
 				createImportList.add(s);
-				if (arr2[arr2.length - 1].equals("*")) {
+				if (s.endsWith("*")) {
 					ASTImportStatement importStatement = typesFactory.createASTImportStatement(createImportList, true);
 					imports.add(importStatement);
 				} else {
