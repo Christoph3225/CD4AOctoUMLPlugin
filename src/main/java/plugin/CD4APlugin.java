@@ -14,22 +14,25 @@ import de.monticore.types.types._ast.*;
 import de.monticore.types.types._parser.TypesParser;
 import de.monticore.umlcd4a.cd4analysis._ast.*;
 import de.monticore.umlcd4a.prettyprint.CDPrettyPrinterConcreteVisitor;
+import exceptions.AssocLeftRefNameMissingException;
+import exceptions.AssocRightRefNameMissingException;
 import exceptions.ClassAttributeNameMissingException;
 import exceptions.ClassAttributeTypeMissingException;
 import exceptions.ClassNameMissingException;
 import exceptions.ConstructorNameMissingException;
+import exceptions.EnumConstantNameMissingException;
+import exceptions.EnumNameMissingException;
+import exceptions.InterfaceNameMissingException;
 import exceptions.MethodNameMissingException;
 import exceptions.MethodParameterNameMissingException;
 import exceptions.MethodParameterTypeMissingException;
 import exceptions.MethodReturnTypeMissingException;
 import javafx.stage.Stage;
 import misc.OctoPair;
-import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import model.Graph;
+import model.GraphElement;
 import model.edges.*;
 import model.edges.AbstractEdge.Direction;
 import model.nodes.AbstractNode;
@@ -43,7 +46,7 @@ public class CD4APlugin implements MontiCorePlugIn {
 	private ASTCDCompilationUnit cdCompUnit;
 	private String usageFolderPath;
 	private static final CD4APlugin singleTonPlugin = new CD4APlugin();
-	private List<OctoPair<AbstractNode, ASTNode>> mapGraphAST = new ArrayList<>();
+	private List<OctoPair<GraphElement, ASTNode>> mapGraphAST = new ArrayList<>();
 	
 	private CD4APlugin() {
 		
@@ -157,7 +160,7 @@ public class CD4APlugin implements MontiCorePlugIn {
 					}
 					ASTCDInterface interf = createASTInterface((ClassNode) cNode, interfName, superInterf);
 					interfazes.add(interf);
-					OctoPair<AbstractNode, ASTNode> pair = new OctoPair<>(cNode, interf);
+					OctoPair<GraphElement, ASTNode> pair = new OctoPair<>(cNode, interf);
 					mapGraphAST.add(pair);
 
 				} else if (clazzName.contains("<<abstract>>")) {
@@ -176,7 +179,7 @@ public class CD4APlugin implements MontiCorePlugIn {
 
 					ASTCDClass clazz = createASTClass((ClassNode) cNode, clazzName, true, superClazzes, superInterf);
 					clazzes.add(clazz);
-					OctoPair<AbstractNode, ASTNode> pair = new OctoPair<>(cNode, clazz);
+					OctoPair<GraphElement, ASTNode> pair = new OctoPair<>(cNode, clazz);
 					mapGraphAST.add(pair);
 
 				} else if (clazzName.contains("<<enum>>")) {
@@ -184,7 +187,7 @@ public class CD4APlugin implements MontiCorePlugIn {
 					String enomName = clazzName.split("<<enum>>")[1];
 					ASTCDEnum enom = createASTEnum((ClassNode) cNode, enomName);
 					enoms.add(enom);
-					OctoPair<AbstractNode, ASTNode> pair = new OctoPair<>(cNode, enom);
+					OctoPair<GraphElement, ASTNode> pair = new OctoPair<>(cNode, enom);
 					mapGraphAST.add(pair);
 
 				} else {
@@ -203,7 +206,7 @@ public class CD4APlugin implements MontiCorePlugIn {
 
 					ASTCDClass clazz = createASTClass((ClassNode) cNode, clazzName, false, superClazzes, superInterf);
 					clazzes.add(clazz);
-					OctoPair<AbstractNode, ASTNode> pair = new OctoPair<>(cNode, clazz);
+					OctoPair<GraphElement, ASTNode> pair = new OctoPair<>(cNode, clazz);
 					mapGraphAST.add(pair);
 				}
 			}
@@ -217,6 +220,8 @@ public class CD4APlugin implements MontiCorePlugIn {
 			if (!(e instanceof InheritanceEdge)) {
 				ASTCDAssociation cdAssoc = createASTCDAssociation(e);
 				assocs.add(cdAssoc);
+				OctoPair<GraphElement, ASTNode> pair = new OctoPair<>(e, cdAssoc);
+				mapGraphAST.add(pair);
 			}
 		}
 
@@ -678,9 +683,9 @@ public class CD4APlugin implements MontiCorePlugIn {
 		// check classes for errors
 		for(ASTCDClass c : cdClasses) {
 			AbstractNode currentNode = null;
-			for(OctoPair<AbstractNode, ASTNode> pair : mapGraphAST) {
+			for(OctoPair<GraphElement, ASTNode> pair : mapGraphAST) {
 				if(c.deepEquals(pair.getR())) {
-					currentNode = pair.getL();
+					currentNode = (AbstractNode) pair.getL();
 				}
 			}
 			if(c.getName() == null) {
@@ -724,31 +729,97 @@ public class CD4APlugin implements MontiCorePlugIn {
 		// check interfaces for errors
 		for(ASTCDInterface i : cdInterfaces) {
 			AbstractNode currentNode = null;
-			for(OctoPair<AbstractNode, ASTNode> pair : mapGraphAST) {
+			for(OctoPair<GraphElement, ASTNode> pair : mapGraphAST) {
 				if(i.deepEquals(pair.getR())) {
-					currentNode = pair.getL();
+					currentNode = (AbstractNode) pair.getL();
 				}
 			}
+			if(i.getName() == null) {
+        errorList.add(new InterfaceNameMissingException(currentNode));
+      }
+			List<ASTCDAttribute> classAttr = i.getCDAttributes();
+      for(ASTCDAttribute a : classAttr) {
+        if(a.getName() == null) {
+          errorList.add(new ClassAttributeNameMissingException(currentNode));
+        }
+        if(a.getType() == null) {
+          errorList.add(new ClassAttributeTypeMissingException(currentNode));
+        }
+      }
+      List<ASTCDMethod> classMethods = i.getCDMethods();
+      for(ASTCDMethod m : classMethods) {
+        if(m.getName() == null) {
+          errorList.add(new MethodNameMissingException(currentNode));
+        }
+        if(m.getReturnType() == null) {
+          errorList.add(new MethodReturnTypeMissingException(currentNode));
+        }
+        List<ASTCDParameter> params = m.getCDParameters();
+        for(ASTCDParameter p : params) {
+          if(p.getName() == null) {
+            errorList.add(new MethodParameterNameMissingException(currentNode));
+          }
+          if(p.getType() == null) {
+            errorList.add(new MethodParameterTypeMissingException(currentNode));
+          }
+        }
+      }
 		}
 		
 		// check enums for errors
 		for(ASTCDEnum e : cdEnums) {
 			AbstractNode currentNode = null;
-			for(OctoPair<AbstractNode, ASTNode> pair : mapGraphAST) {
+			for(OctoPair<GraphElement, ASTNode> pair : mapGraphAST) {
 				if(e.deepEquals(pair.getR())) {
-					currentNode = pair.getL();
+					currentNode = (AbstractNode) pair.getL();
 				}
 			}
+			if(e.getName() == null) {
+        errorList.add(new EnumNameMissingException(currentNode));
+      }
+			List<ASTCDEnumConstant> enumConstants = e.getCDEnumConstants();
+			for(ASTCDEnumConstant ec : enumConstants) {
+			  if(ec.getName() == null) {
+			    errorList.add(new EnumConstantNameMissingException(currentNode));
+			  }
+			}
+			
+			List<ASTCDMethod> classMethods = e.getCDMethods();
+      for(ASTCDMethod m : classMethods) {
+        if(m.getName() == null) {
+          errorList.add(new MethodNameMissingException(currentNode));
+        }
+        if(m.getReturnType() == null) {
+          errorList.add(new MethodReturnTypeMissingException(currentNode));
+        }
+        List<ASTCDParameter> params = m.getCDParameters();
+        for(ASTCDParameter p : params) {
+          if(p.getName() == null) {
+            errorList.add(new MethodParameterNameMissingException(currentNode));
+          }
+          if(p.getType() == null) {
+            errorList.add(new MethodParameterTypeMissingException(currentNode));
+          }
+        }
+      }
+			
 		}
 		
 		// check associations for errors
 		for(ASTCDAssociation a : cdAssociations) {
-			AbstractNode currentNode = null;
-			for(OctoPair<AbstractNode, ASTNode> pair : mapGraphAST) {
+			Edge currentEdge = null;
+			for(OctoPair<GraphElement, ASTNode> pair : mapGraphAST) {
 				if(a.deepEquals(pair.getR())) {
-					currentNode = pair.getL();
+					currentEdge = (Edge) pair.getL();
 				}
 			}
+			AbstractEdge abstrEdge = (AbstractEdge) currentEdge;
+			if(abstrEdge.getStartNode().getTitle() == null) {
+			  errorList.add(new AssocLeftRefNameMissingException(abstrEdge.getStartNode()));
+			}
+			if(abstrEdge.getEndNode().getTitle() == null) {
+        errorList.add(new AssocRightRefNameMissingException(abstrEdge.getEndNode()));
+      }
 		}
 		
 		return errorList;
