@@ -6,46 +6,55 @@ import javafx.scene.layout.Pane;
 import model.nodes.AbstractNode;
 import model.nodes.Node;
 import plugin.MontiCoreException;
+import view.nodes.AbstractNodeView;
 
 public class ClassAttributeNameMissingException implements MontiCoreException {
   private AbstractNode currentNode;
   private ExceptionType type = ExceptionType.CLASS_ATTRIBUTE_NAME_MISSING;
   private Pane currentPane;
   
-  public ClassAttributeNameMissingException(Node node){
-      this.currentNode = (AbstractNode) node;
-      this.setPane();
+  private AbstractNodeView nodeView;
+  
+  public ClassAttributeNameMissingException(Node node, AbstractNodeView view) {
+    this.currentNode = (AbstractNode) node;
+    this.setPane();
+    this.nodeView = view;
   }
-
+  
   @Override
   public String getContentMessage() {
-      return "Class attribute name is missing!";
+    return "Class attribute name is missing!";
   }
-
-  public void setType(ExceptionType t){
-      this.type = t;
+  
+  public void setType(ExceptionType t) {
+    this.type = t;
   }
-
+  
   public ExceptionType getType() {
-      return type;
+    return type;
   }
   
   @Override
   public Pane getContentPane() {
-	  return this.currentPane;
+    return this.currentPane;
   }
   
   private void setPane() {
-	  currentPane = new Pane();
-	  Label lbl = new Label(getContentMessage());
-	  currentPane.getChildren().add(lbl);
+    currentPane = new Pane();
+    Label lbl = new Label(getContentMessage());
+    currentPane.getChildren().add(lbl);
   }
   
-  public AbstractNode getNode(){
-      return this.currentNode;
+  public AbstractNode getNode() {
+    return this.currentNode;
   }
-
-  public void setNode(AbstractNode n){
-      this.currentNode = n;
+  
+  public void setNode(AbstractNode n) {
+    this.currentNode = n;
+  }
+  
+  @Override
+  public void handleActionClickOnPane() {
+    this.nodeView.setSelected(true);
   }
 }

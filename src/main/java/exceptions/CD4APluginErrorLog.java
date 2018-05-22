@@ -3,7 +3,6 @@ package exceptions;
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.scene.control.Button;
 import plugin.MontiCoreException;
 
 public class CD4APluginErrorLog {
@@ -30,7 +29,4 @@ public class CD4APluginErrorLog {
     return allLogs;
   }
   
-  public void showPopOver(Button owner) {
-    
-  }
 }

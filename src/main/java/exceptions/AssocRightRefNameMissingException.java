@@ -6,46 +6,55 @@ import javafx.scene.layout.Pane;
 import model.nodes.AbstractNode;
 import model.nodes.Node;
 import plugin.MontiCoreException;
+import view.nodes.AbstractNodeView;
 
 public class AssocRightRefNameMissingException implements MontiCoreException {
   private AbstractNode currentNode;
   private ExceptionType type = ExceptionType.RIGHT_REFERENCE_NAME_MISSING;
   private Pane currentPane;
   
-  public AssocRightRefNameMissingException(Node node){
-      this.currentNode = (AbstractNode) node;
-      this.setPane();
+  private AbstractNodeView nodeView;
+  
+  public AssocRightRefNameMissingException(Node node, AbstractNodeView view) {
+    this.currentNode = (AbstractNode) node;
+    this.setPane();
+    this.nodeView = view;
   }
-
+  
   @Override
   public String getContentMessage() {
-      return "Right reference name is missing!";
+    return "Right reference name is missing!";
   }
-
-  public void setType(ExceptionType t){
-      this.type = t;
+  
+  public void setType(ExceptionType t) {
+    this.type = t;
   }
   
   @Override
   public Pane getContentPane() {
-	  return this.currentPane;
+    return this.currentPane;
   }
   
   private void setPane() {
-	  currentPane = new Pane();
-	  Label lbl = new Label(getContentMessage());
-	  currentPane.getChildren().add(lbl);
-  }
-
-  public ExceptionType getType() {
-      return type;
+    currentPane = new Pane();
+    Label lbl = new Label(getContentMessage());
+    currentPane.getChildren().add(lbl);
   }
   
-  public AbstractNode getNode(){
-      return this.currentNode;
+  public ExceptionType getType() {
+    return type;
   }
-
-  public void setNode(AbstractNode n){
-      this.currentNode = n;
+  
+  public AbstractNode getNode() {
+    return this.currentNode;
+  }
+  
+  public void setNode(AbstractNode n) {
+    this.currentNode = n;
+  }
+  
+  @Override
+  public void handleActionClickOnPane() {
+    this.nodeView.setSelected(true);
   }
 }

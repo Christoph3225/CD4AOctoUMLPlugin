@@ -4,6 +4,7 @@ import exceptions.CD4APluginErrorLog.ExceptionType;
 import model.nodes.AbstractNode;
 import model.nodes.Node;
 import plugin.MontiCoreException;
+import view.nodes.AbstractNodeView;
 import javafx.scene.layout.*;
 import javafx.scene.control.*;
 
@@ -12,40 +13,48 @@ public class InterfaceNameMissingException implements MontiCoreException {
   private ExceptionType type = ExceptionType.INTERFACE_NAME_MISSING;
   private Pane currentPane;
   
-  public InterfaceNameMissingException(Node node){
-      this.currentNode = (AbstractNode) node;
-      this.setPane();
+  private AbstractNodeView nodeView;
+  
+  public InterfaceNameMissingException(Node node, AbstractNodeView view) {
+    this.currentNode = (AbstractNode) node;
+    this.setPane();
+    this.nodeView = view;
   }
-
+  
   @Override
   public String getContentMessage() {
-      return "Interface name is missing!";
+    return "Interface name is missing!";
   }
-
-  public void setType(ExceptionType t){
-      this.type = t;
+  
+  public void setType(ExceptionType t) {
+    this.type = t;
   }
-
+  
   public ExceptionType getType() {
-      return type;
+    return type;
   }
   
   @Override
   public Pane getContentPane() {
-	  return this.currentPane;
+    return this.currentPane;
   }
   
   private void setPane() {
-	  currentPane = new Pane();
-	  Label lbl = new Label(getContentMessage());
-	  currentPane.getChildren().add(lbl);
+    currentPane = new Pane();
+    Label lbl = new Label(getContentMessage());
+    currentPane.getChildren().add(lbl);
   }
   
-  public AbstractNode getNode(){
-      return this.currentNode;
+  public AbstractNode getNode() {
+    return this.currentNode;
   }
-
-  public void setNode(AbstractNode n){
-      this.currentNode = n;
+  
+  public void setNode(AbstractNode n) {
+    this.currentNode = n;
+  }
+  
+  @Override
+  public void handleActionClickOnPane() {
+    this.nodeView.setSelected(true);
   }
 }

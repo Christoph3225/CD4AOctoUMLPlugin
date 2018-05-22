@@ -1,7 +1,9 @@
 package exceptions;
 
 import exceptions.CD4APluginErrorLog.ExceptionType;
+import javafx.event.EventHandler;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import model.nodes.AbstractNode;
 import model.nodes.Node;
@@ -14,10 +16,10 @@ public class ClassNameMissingException implements MontiCoreException {
   private Pane currentPane;
   private AbstractNodeView nodeView;
   
-  public ClassNameMissingException(Node node) {//, AbstractNodeView view){
+  public ClassNameMissingException(Node node, AbstractNodeView view){
       this.currentNode = (AbstractNode) node;
       this.setPane();
-      //this.nodeView = view;
+      this.nodeView = view;
   }
 
   @Override
@@ -42,7 +44,14 @@ public class ClassNameMissingException implements MontiCoreException {
 	  currentPane = new Pane();
 	  Label lbl = new Label(getContentMessage());
 	  currentPane.getChildren().add(lbl);
-	  //TODO add handle function
+	  currentPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+      @Override
+      public void handle(MouseEvent event) {
+        handleActionClickOnPane();
+      }
+	    
+	  });
   }
   
   public AbstractNode getNode(){
@@ -53,10 +62,8 @@ public class ClassNameMissingException implements MontiCoreException {
       this.currentNode = n;
   }
 
-  /*
   @Override
   public void handleActionClickOnPane() {
     this.nodeView.setSelected(true);
   }
-  */
 }

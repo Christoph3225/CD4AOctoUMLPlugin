@@ -4,7 +4,9 @@ import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 import org.controlsfx.control.Notifications;
@@ -26,7 +28,7 @@ import model.Sketch;
 import model.edges.AbstractEdge;
 import model.edges.Edge;
 import model.edges.InheritanceEdge;
-import model.nodes.AbstractNode;
+import model.nodes.*;
 import plugin.CD4APlugin;
 import plugin.MontiCoreException;
 import util.commands.CompoundCommand;
@@ -204,7 +206,7 @@ public class CD4AController extends AbstractDiagramController {
     
     // ------------------------- Touch ---------------------------------
     // There are specific events for touch when creating and drawing to utilize
-    // multitouch. //TODO edge creation multi-user support.
+    // multitouch. //todo edge creation multi-user support.
     drawPane.setOnTouchPressed(event -> {
       if ((tool == ToolEnum.CREATE_CLASS || tool == ToolEnum.CREATE_PACKAGE) && !mouseCreationActivated) {
         mode = Mode.CREATING;
@@ -526,11 +528,10 @@ public class CD4AController extends AbstractDiagramController {
     redoBtn.setOnAction(event -> undoManager.redoCommand());
     deleteBtn.setOnAction(event -> deleteSelected());
     recognizeBtn.setOnAction(event -> {
-      checkSketchErrors(getGraphModel());
+      checkSketchErrors(getGraphModel(), getNodeMap());
       recognizeController.recognize(selectedSketches);
       if (errorCounter == 0) {
         validateBtn.setDisable(false);
-        plugin.mapViewToNode(getGraphModel());
         Notifications.create().title("Recognization").text("Recognization of the graph successfull.").showInformation();
       }
     });
@@ -614,12 +615,12 @@ public class CD4AController extends AbstractDiagramController {
         }
       }
       
-      List<MontiCoreException> astErrorList = plugin.check(unit);
+      List<MontiCoreException> astErrorList = plugin.check(unit, getNodeMap());
       for (MontiCoreException ex : astErrorList) {
         errorLog.addLog(ex);
       }
       errorCounter = errorLog.getAllLogs().size();
-      showErrorLogBtn.setText("Error Log (" + errorCounter + ")");
+      showErrorLogBtn.setText("(" + errorCounter + ")");
       
       if (errorCounter == 0) {
         generateBtn.setDisable(false);
@@ -634,12 +635,12 @@ public class CD4AController extends AbstractDiagramController {
         Notifications.create().title("Code Generator").text("Code generation was successfull.").showInformation();
       }
       else {
-        errorLog.addLog(new CodeGenerationException(null));
+        errorLog.addLog(new CodeGenerationException(null, null));
       }
     });
   }
   
-  private void checkSketchErrors(Graph g) {
+  private void checkSketchErrors(Graph g, HashMap<AbstractNodeView, AbstractNode> map) {
     // remove all existing corresponding exceptions for checking if they are
     // corrected
     for (MontiCoreException ex : errorLog.getAllLogs()) {
@@ -656,27 +657,27 @@ public class CD4AController extends AbstractDiagramController {
         errorLog.getAllLogs().remove(ex);
       }
     }
-    for(AbstractNode n : g.getAllNodes()) {
-      if(n.getTitle() == null) {
-        errorLog.addLog(new NodeNameMissingException(n));
+    for (AbstractNode n : g.getAllNodes()) {
+      if (n.getTitle() == null) {
+        errorLog.addLog(new NodeNameMissingException(n, getCorrespondingNodeView(n)));
       }
     }
     for (Edge e : g.getAllEdges()) {
       AbstractEdge abstrEdge = (AbstractEdge) e;
       if (!(abstrEdge instanceof InheritanceEdge)) {
         if (abstrEdge.getStartMultiplicity() == null) {
-          errorLog.addLog(new NoMultiplicityOnAssociationException(abstrEdge.getStartNode()));
+          errorLog.addLog(new NoMultiplicityOnAssociationException(abstrEdge.getStartNode(), getCorrespondingNodeView(abstrEdge.getStartNode())));
         }
         if (abstrEdge.getEndMultiplicity() == null) {
-          errorLog.addLog(new NoMultiplicityOnAssociationException(abstrEdge.getEndNode()));
+          errorLog.addLog(new NoMultiplicityOnAssociationException(abstrEdge.getEndNode(), getCorrespondingNodeView(abstrEdge.getEndNode())));
         }
       }
     }
     if (packageName == null) {
-      errorLog.addLog(new PackageNameMissingException(null));
+      errorLog.addLog(new PackageNameMissingException(null, null));
     }
     if (modelName == null) {
-      errorLog.addLog(new ClassDiagramNameMissingException(null));
+      errorLog.addLog(new ClassDiagramNameMissingException(null, null));
     }
     errorCounter = errorLog.getAllLogs().size();
     showErrorLogBtn.setText("(" + errorCounter + ")");
@@ -693,6 +694,16 @@ public class CD4AController extends AbstractDiagramController {
     }
     
     pop.show(showErrorLogBtn);
+  }
+  
+  private AbstractNodeView getCorrespondingNodeView(Node n) {
+    AbstractNodeView view = null;
+    for (Entry<AbstractNodeView, AbstractNode> entry : getNodeMap().entrySet()) {
+      if (n.equals(entry.getValue())) {
+        view = entry.getKey();
+      }
+    }
+    return view;
   }
   
   @FXML

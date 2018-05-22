@@ -1,34 +1,39 @@
 package exceptions;
 
+import org.controlsfx.control.Notifications;
+
 import exceptions.CD4APluginErrorLog.ExceptionType;
 import javafx.scene.layout.*;
 import javafx.scene.control.*;
 import model.nodes.AbstractNode;
 import model.nodes.Node;
 import plugin.MontiCoreException;
-
+import view.nodes.AbstractNodeView;
 
 public class CodeGenerationException implements MontiCoreException {
   private AbstractNode currentNode;
   private ExceptionType type = ExceptionType.CODE_GENERATION_ERROR;
   private Pane currentPane;
   
-  public CodeGenerationException(Node node){
-      this.currentNode = (AbstractNode) node;
-      this.setPane();
+  private AbstractNodeView nodeView;
+  
+  public CodeGenerationException(Node node, AbstractNodeView view) {
+    this.currentNode = (AbstractNode) node;
+    this.setPane();
+    this.nodeView = view;
   }
-
+  
   @Override
   public String getContentMessage() {
-      return "Code generation error!";
+    return "Code generation error!";
   }
-
-  public void setType(ExceptionType t){
-      this.type = t;
+  
+  public void setType(ExceptionType t) {
+    this.type = t;
   }
-
+  
   public ExceptionType getType() {
-      return type;
+    return type;
   }
   
   @Override
@@ -42,11 +47,16 @@ public class CodeGenerationException implements MontiCoreException {
     currentPane.getChildren().add(lbl);
   }
   
-  public AbstractNode getNode(){
-      return this.currentNode;
+  public AbstractNode getNode() {
+    return this.currentNode;
   }
-
-  public void setNode(AbstractNode n){
-      this.currentNode = n;
+  
+  public void setNode(AbstractNode n) {
+    this.currentNode = n;
+  }
+  
+  @Override
+  public void handleActionClickOnPane() {
+    // nothing to do here
   }
 }

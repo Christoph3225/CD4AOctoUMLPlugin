@@ -2,8 +2,10 @@ package plugin;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map.Entry;
 
 import controller.AbstractDiagramController;
 import controller.CD4AController;
@@ -30,7 +32,6 @@ import exceptions.MethodReturnTypeMissingException;
 import generator.CD4ACodeGenerator;
 import javafx.stage.Stage;
 import misc.OctoPair;
-import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import model.Graph;
@@ -39,6 +40,7 @@ import model.edges.*;
 import model.edges.AbstractEdge.Direction;
 import model.nodes.AbstractNode;
 import model.nodes.ClassNode;
+import model.nodes.Node;
 import model.nodes.PackageNode;
 import view.nodes.AbstractNodeView;
 
@@ -50,7 +52,6 @@ public class CD4APlugin implements MontiCorePlugIn {
 	private String usageFolderPath;
 	private static final CD4APlugin singleTonPlugin = new CD4APlugin();
 	private List<OctoPair<GraphElement, ASTNode>> mapGraphAST = new ArrayList<>();
-	private List<OctoPair<GraphElement, Group>> mapNodeToView = new ArrayList<>();
 	
 	private CD4APlugin() {
 		
@@ -673,8 +674,7 @@ public class CD4APlugin implements MontiCorePlugIn {
 	}
 
 	@Override
-	public List<MontiCoreException> check(ASTNode node) {
-		//TODO add actionlistener to exception pane to handle click -> mark corresponding node/edge
+	public List<MontiCoreException> check(ASTNode node, HashMap<AbstractNodeView, AbstractNode> map) {
 		List<MontiCoreException> errorList = new ArrayList<>();
 		ASTCDCompilationUnit unit = (ASTCDCompilationUnit) node;
 		ASTCDDefinition cdDef = unit.getCDDefinition();
@@ -692,38 +692,38 @@ public class CD4APlugin implements MontiCorePlugIn {
 				}
 			}
 			if(c.getName() == null) {
-				errorList.add(new ClassNameMissingException(currentNode));
+				errorList.add(new ClassNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
 			}
 			List<ASTCDAttribute> classAttr = c.getCDAttributes();
 			for(ASTCDAttribute a : classAttr) {
 				if(a.getName() == null) {
-					errorList.add(new ClassAttributeNameMissingException(currentNode));
+					errorList.add(new ClassAttributeNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
 				}
 				if(a.getType() == null) {
-					errorList.add(new ClassAttributeTypeMissingException(currentNode));
+					errorList.add(new ClassAttributeTypeMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
 				}
 			}
 			List<ASTCDConstructor> classConstr = c.getCDConstructors();
 			for(ASTCDConstructor con : classConstr) {
 				if(con.getName() == null) {
-					errorList.add(new ConstructorNameMissingException(currentNode));
+					errorList.add(new ConstructorNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
 				}
 			}
 			List<ASTCDMethod> classMethods = c.getCDMethods();
 			for(ASTCDMethod m : classMethods) {
 				if(m.getName() == null) {
-					errorList.add(new MethodNameMissingException(currentNode));
+					errorList.add(new MethodNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
 				}
 				if(m.getReturnType() == null) {
-					errorList.add(new MethodReturnTypeMissingException(currentNode));
+					errorList.add(new MethodReturnTypeMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
 				}
 				List<ASTCDParameter> params = m.getCDParameters();
 				for(ASTCDParameter p : params) {
 					if(p.getName() == null) {
-						errorList.add(new MethodParameterNameMissingException(currentNode));
+						errorList.add(new MethodParameterNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
 					}
 					if(p.getType() == null) {
-						errorList.add(new MethodParameterTypeMissingException(currentNode));
+						errorList.add(new MethodParameterTypeMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
 					}
 				}
 			}
@@ -738,32 +738,32 @@ public class CD4APlugin implements MontiCorePlugIn {
 				}
 			}
 			if(i.getName() == null) {
-        errorList.add(new InterfaceNameMissingException(currentNode));
+        errorList.add(new InterfaceNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
       }
 			List<ASTCDAttribute> classAttr = i.getCDAttributes();
       for(ASTCDAttribute a : classAttr) {
         if(a.getName() == null) {
-          errorList.add(new ClassAttributeNameMissingException(currentNode));
+          errorList.add(new ClassAttributeNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
         }
         if(a.getType() == null) {
-          errorList.add(new ClassAttributeTypeMissingException(currentNode));
+          errorList.add(new ClassAttributeTypeMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
         }
       }
       List<ASTCDMethod> classMethods = i.getCDMethods();
       for(ASTCDMethod m : classMethods) {
         if(m.getName() == null) {
-          errorList.add(new MethodNameMissingException(currentNode));
+          errorList.add(new MethodNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
         }
         if(m.getReturnType() == null) {
-          errorList.add(new MethodReturnTypeMissingException(currentNode));
+          errorList.add(new MethodReturnTypeMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
         }
         List<ASTCDParameter> params = m.getCDParameters();
         for(ASTCDParameter p : params) {
           if(p.getName() == null) {
-            errorList.add(new MethodParameterNameMissingException(currentNode));
+            errorList.add(new MethodParameterNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
           }
           if(p.getType() == null) {
-            errorList.add(new MethodParameterTypeMissingException(currentNode));
+            errorList.add(new MethodParameterTypeMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
           }
         }
       }
@@ -778,30 +778,30 @@ public class CD4APlugin implements MontiCorePlugIn {
 				}
 			}
 			if(e.getName() == null) {
-        errorList.add(new EnumNameMissingException(currentNode));
+        errorList.add(new EnumNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
       }
 			List<ASTCDEnumConstant> enumConstants = e.getCDEnumConstants();
 			for(ASTCDEnumConstant ec : enumConstants) {
 			  if(ec.getName() == null) {
-			    errorList.add(new EnumConstantNameMissingException(currentNode));
+			    errorList.add(new EnumConstantNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
 			  }
 			}
 			
 			List<ASTCDMethod> classMethods = e.getCDMethods();
       for(ASTCDMethod m : classMethods) {
         if(m.getName() == null) {
-          errorList.add(new MethodNameMissingException(currentNode));
+          errorList.add(new MethodNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
         }
         if(m.getReturnType() == null) {
-          errorList.add(new MethodReturnTypeMissingException(currentNode));
+          errorList.add(new MethodReturnTypeMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
         }
         List<ASTCDParameter> params = m.getCDParameters();
         for(ASTCDParameter p : params) {
           if(p.getName() == null) {
-            errorList.add(new MethodParameterNameMissingException(currentNode));
+            errorList.add(new MethodParameterNameMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
           }
           if(p.getType() == null) {
-            errorList.add(new MethodParameterTypeMissingException(currentNode));
+            errorList.add(new MethodParameterTypeMissingException(currentNode, getCorrespondingNodeView(currentNode, map)));
           }
         }
       }
@@ -818,10 +818,10 @@ public class CD4APlugin implements MontiCorePlugIn {
 			}
 			AbstractEdge abstrEdge = (AbstractEdge) currentEdge;
 			if(abstrEdge.getStartNode().getTitle() == null) {
-			  errorList.add(new AssocLeftRefNameMissingException(abstrEdge.getStartNode()));
+			  errorList.add(new AssocLeftRefNameMissingException(abstrEdge.getStartNode(), getCorrespondingNodeView(abstrEdge.getStartNode(), map)));
 			}
 			if(abstrEdge.getEndNode().getTitle() == null) {
-        errorList.add(new AssocRightRefNameMissingException(abstrEdge.getEndNode()));
+        errorList.add(new AssocRightRefNameMissingException(abstrEdge.getEndNode(), getCorrespondingNodeView(abstrEdge.getEndNode(), map)));
       }
 		}
 		
@@ -845,6 +845,16 @@ public class CD4APlugin implements MontiCorePlugIn {
 		}
 	}
 
+	private AbstractNodeView getCorrespondingNodeView(Node n, HashMap<AbstractNodeView, AbstractNode> map) {
+    AbstractNodeView view = null;
+    for (Entry<AbstractNodeView, AbstractNode> entry : map.entrySet()) {
+      if (n.equals(entry.getValue())) {
+        view = entry.getKey();
+      }
+    }
+    return view;
+  }
+	
 	@Override
 	public String getFlagName() {
 		return "CD";
@@ -902,9 +912,4 @@ public class CD4APlugin implements MontiCorePlugIn {
 	public void setUsageFolderPath(String usageFolderPath) {
 		this.usageFolderPath = usageFolderPath;
 	}
-	
-	public void mapViewToNode(Graph graph) {
-	  //TODO
-	}
-
 }

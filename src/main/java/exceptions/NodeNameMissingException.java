@@ -1,7 +1,9 @@
 package exceptions;
 
 import exceptions.CD4APluginErrorLog.ExceptionType;
+import javafx.event.EventHandler;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import model.nodes.AbstractNode;
 import model.nodes.Node;
@@ -14,23 +16,23 @@ public class NodeNameMissingException implements MontiCoreException {
   private Pane currentPane;
   private AbstractNodeView nodeView;
   
-  public NodeNameMissingException(Node node) {//, AbstractNodeView view){
-      this.currentNode = (AbstractNode) node;
-      this.setPane();
-      //this.nodeView = view;
+  public NodeNameMissingException(Node node, AbstractNodeView view) {
+    this.currentNode = (AbstractNode) node;
+    this.setPane();
+    this.nodeView = view;
   }
-
+  
   @Override
   public String getContentMessage() {
-      return "Node name is missing!";
+    return "Node name is missing!";
   }
-
-  public void setType(ExceptionType t){
-      this.type = t;
+  
+  public void setType(ExceptionType t) {
+    this.type = t;
   }
-
+  
   public ExceptionType getType() {
-      return type;
+    return type;
   }
   
   @Override
@@ -42,21 +44,26 @@ public class NodeNameMissingException implements MontiCoreException {
     currentPane = new Pane();
     Label lbl = new Label(getContentMessage());
     currentPane.getChildren().add(lbl);
-    //TODO add handle function
+    currentPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+      @Override
+      public void handle(MouseEvent event) {
+        handleActionClickOnPane();
+      }
+      
+    });
   }
   
-  public AbstractNode getNode(){
-      return this.currentNode;
+  public AbstractNode getNode() {
+    return this.currentNode;
   }
-
-  public void setNode(AbstractNode n){
-      this.currentNode = n;
+  
+  public void setNode(AbstractNode n) {
+    this.currentNode = n;
   }
-
-  /*
+  
   @Override
   public void handleActionClickOnPane() {
     this.nodeView.setSelected(true);
   }
-  */
 }
