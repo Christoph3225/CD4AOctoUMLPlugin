@@ -8,13 +8,13 @@ import model.nodes.Node;
 import plugin.MontiCoreException;
 import view.nodes.AbstractNodeView;
 
-public class ClassNameMissingException implements MontiCoreException {
+public class NodeNameMissingException implements MontiCoreException {
   private AbstractNode currentNode;
-  private ExceptionType type = ExceptionType.CLASS_NAME_MISSING;
+  private ExceptionType type = ExceptionType.NODE_NAME_MISSING;
   private Pane currentPane;
   private AbstractNodeView nodeView;
   
-  public ClassNameMissingException(Node node) {//, AbstractNodeView view){
+  public NodeNameMissingException(Node node) {//, AbstractNodeView view){
       this.currentNode = (AbstractNode) node;
       this.setPane();
       //this.nodeView = view;
@@ -22,7 +22,7 @@ public class ClassNameMissingException implements MontiCoreException {
 
   @Override
   public String getContentMessage() {
-      return "Class name is missing!";
+      return "Node name is missing!";
   }
 
   public void setType(ExceptionType t){
@@ -35,14 +35,14 @@ public class ClassNameMissingException implements MontiCoreException {
   
   @Override
   public Pane getContentPane() {
-	  return this.currentPane;
+    return this.currentPane;
   }
   
   private void setPane() {
-	  currentPane = new Pane();
-	  Label lbl = new Label(getContentMessage());
-	  currentPane.getChildren().add(lbl);
-	  //TODO add handle function
+    currentPane = new Pane();
+    Label lbl = new Label(getContentMessage());
+    currentPane.getChildren().add(lbl);
+    //TODO add handle function
   }
   
   public AbstractNode getNode(){

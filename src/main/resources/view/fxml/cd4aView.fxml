@@ -145,20 +145,18 @@
 							</graphic>
 						</Button>
 					</HBox>
+					<HBox fx:id="containerErrorBox" spacing="5">
+						<Button fx:id="editInfoBtn" text="Edit Diagram Info" />
+						<Button fx:id="showErrorLogBtn" text="Error Log" />
+					</HBox>
 				</ToolBar>
 			</VBox>
 
-			<HBox>
-				<VBox prefWidth="1000.0">
+			<VBox prefWidth="1000.0">
 					<Label fx:id="packageLbl" text="package" />
 					<Label fx:id="importLbl" text="import "/>
 					<Label fx:id="cdNameLbl" text="classdiagram" />	
-				</VBox>
-				<HBox spacing="10">
-					<Button fx:id="editInfoBtn" text="Edit Diagram Info" />
-					<Button fx:id="showErrorLogBtn" text="Error Log" />
-				</HBox>
-			</HBox>
+			</VBox>
 		</VBox>
 	</top>
 	<bottom>

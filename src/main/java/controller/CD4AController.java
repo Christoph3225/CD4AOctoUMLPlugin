@@ -13,24 +13,7 @@ import org.controlsfx.control.PopOver;
 import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.umlcd4a.cd4analysis._ast.ASTCDCompilationUnit;
 import de.monticore.umlcd4a.prettyprint.CDPrettyPrinterConcreteVisitor;
-import exceptions.AssocLeftRefNameMissingException;
-import exceptions.AssocRightRefNameMissingException;
-import exceptions.CD4APluginErrorLog;
-import exceptions.ClassAttributeNameMissingException;
-import exceptions.ClassAttributeTypeMissingException;
-import exceptions.ClassDiagramNameMissingException;
-import exceptions.ClassNameMissingException;
-import exceptions.CodeGenerationException;
-import exceptions.ConstructorNameMissingException;
-import exceptions.EnumConstantNameMissingException;
-import exceptions.EnumNameMissingException;
-import exceptions.InterfaceNameMissingException;
-import exceptions.MethodNameMissingException;
-import exceptions.MethodParameterNameMissingException;
-import exceptions.MethodParameterTypeMissingException;
-import exceptions.MethodReturnTypeMissingException;
-import exceptions.NoMultiplicityOnAssociationException;
-import exceptions.PackageNameMissingException;
+import exceptions.*;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -43,6 +26,7 @@ import model.Sketch;
 import model.edges.AbstractEdge;
 import model.edges.Edge;
 import model.edges.InheritanceEdge;
+import model.nodes.AbstractNode;
 import plugin.CD4APlugin;
 import plugin.MontiCoreException;
 import util.commands.CompoundCommand;
@@ -52,8 +36,6 @@ import view.nodes.PackageNodeView;
 
 public class CD4AController extends AbstractDiagramController {
   
-  // push success 
-
   @FXML
   Button showErrorLogBtn, editInfoBtn;
   @FXML
@@ -507,6 +489,12 @@ public class CD4AController extends AbstractDiagramController {
     image = new Image("/icons/generatew.png");
     generateBtn.setGraphic(new ImageView(image));
     generateBtn.setText("");
+    image = new Image("/icons/editinfow.png");
+    editInfoBtn.setGraphic(new ImageView(image));
+    editInfoBtn.setText("");
+    image = new Image("/icons/showerrorlogw.png");
+    showErrorLogBtn.setGraphic(new ImageView(image));
+    showErrorLogBtn.setText("");
     buttonInUse = createBtn;
     buttonInUse.getStyleClass().add("button-in-use"); //
     // ---------------------- Actions for buttons ----------------------------
@@ -664,8 +652,16 @@ public class CD4AController extends AbstractDiagramController {
       if (ex instanceof NoMultiplicityOnAssociationException) {
         errorLog.getAllLogs().remove(ex);
       }
+      if (ex instanceof NodeNameMissingException) {
+        errorLog.getAllLogs().remove(ex);
+      }
     }
-    
+    for(AbstractNode n : g.getAllNodes()) {
+      if(n.getTitle() == null) {
+        errorLog.addLog(new NodeNameMissingException(n));
+      }
+      System.out.println(n.getTitle());
+    }
     for (Edge e : g.getAllEdges()) {
       AbstractEdge abstrEdge = (AbstractEdge) e;
       if (!(abstrEdge instanceof InheritanceEdge)) {
@@ -684,7 +680,7 @@ public class CD4AController extends AbstractDiagramController {
       errorLog.addLog(new ClassDiagramNameMissingException(null));
     }
     errorCounter = errorLog.getAllLogs().size();
-    showErrorLogBtn.setText("Error Log (" + errorCounter + ")");
+    showErrorLogBtn.setText("(" + errorCounter + ")");
   }
   
   private void showErrorLog() {
