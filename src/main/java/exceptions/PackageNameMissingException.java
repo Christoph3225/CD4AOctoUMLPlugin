@@ -4,7 +4,9 @@ import org.controlsfx.control.Notifications;
 
 import exceptions.CD4APluginErrorLog.ExceptionType;
 import javafx.scene.layout.*;
+import javafx.event.EventHandler;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import model.nodes.AbstractNode;
 import model.nodes.Node;
 import plugin.MontiCoreException;
@@ -46,6 +48,14 @@ public class PackageNameMissingException implements MontiCoreException {
     currentPane = new Pane();
     Label lbl = new Label(getContentMessage());
     currentPane.getChildren().add(lbl);
+    currentPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+      @Override
+      public void handle(MouseEvent event) {
+        handleActionClickOnPane();
+      }
+      
+    });
   }
   
   @Override

@@ -6,7 +6,9 @@ import model.nodes.Node;
 import plugin.MontiCoreException;
 import view.nodes.AbstractNodeView;
 import javafx.scene.layout.*;
+import javafx.event.EventHandler;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 
 public class InterfaceNameMissingException implements MontiCoreException {
   private AbstractNode currentNode;
@@ -43,6 +45,14 @@ public class InterfaceNameMissingException implements MontiCoreException {
     currentPane = new Pane();
     Label lbl = new Label(getContentMessage());
     currentPane.getChildren().add(lbl);
+    currentPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+      @Override
+      public void handle(MouseEvent event) {
+        handleActionClickOnPane();
+      }
+      
+    });
   }
   
   public AbstractNode getNode() {

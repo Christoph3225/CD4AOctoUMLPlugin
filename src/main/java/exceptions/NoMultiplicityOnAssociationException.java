@@ -3,7 +3,9 @@ package exceptions;
 import org.controlsfx.control.Notifications;
 
 import exceptions.CD4APluginErrorLog.ExceptionType;
+import javafx.event.EventHandler;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import model.nodes.AbstractNode;
 import model.nodes.Node;
@@ -45,6 +47,14 @@ public class NoMultiplicityOnAssociationException implements MontiCoreException 
     currentPane = new Pane();
     Label lbl = new Label(getContentMessage());
     currentPane.getChildren().add(lbl);
+    currentPane.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+      @Override
+      public void handle(MouseEvent event) {
+        handleActionClickOnPane();
+      }
+      
+    });
   }
   
   public AbstractNode getNode() {
