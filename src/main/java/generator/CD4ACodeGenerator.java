@@ -90,6 +90,8 @@ public class CD4ACodeGenerator {
       code += methodLine;
     }
     
+    code += "\n}";
+    
     try {
       FileUtils.writeStringToFile(new File(path + className + ".java"), code);
     }
@@ -200,6 +202,8 @@ public class CD4ACodeGenerator {
       methodLine = generateMethod(m);
       code += methodLine;
     }
+    
+    code += "\n}";
     
     try {
       String generatePath = path + "/src/main/java/";
