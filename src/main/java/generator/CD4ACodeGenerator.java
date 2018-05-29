@@ -142,11 +142,17 @@ public class CD4ACodeGenerator {
     }
     else {
       if (con.printThrowsDecl().equals(EMPTY_STRING)) {
-        result = "public " + name + "(" + con.printParametersDecl() + ") { \n }\n";
+        result = "public " + name + "(" + con.printParametersDecl() + ") { \n ";
       }
       else {
-        result = "public " + name + "(" + con.printParametersDecl() + ") throws " + con.printThrowsDecl() + "{ \n }\n";
+        result = "public " + name + "(" + con.printParametersDecl() + ") throws " + con.printThrowsDecl() + "{ \n ";
       }
+      List<ASTCDParameter> params = con.getCDParameters();
+      for(ASTCDParameter p : params) {
+        String paramName = (p.getName().substring(0, 1).toUpperCase() + p.getName().substring(1));
+        result += "this.set" + paramName + "(" + p.getName() + ");";
+      }
+      result += "} \n";
     }
     
     return result;
