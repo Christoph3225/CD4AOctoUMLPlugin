@@ -148,6 +148,7 @@
 					<HBox fx:id="containerErrorBox" spacing="5">
 						<Button fx:id="editInfoBtn" text="Edit Diagram Info" />
 						<Button fx:id="showErrorLogBtn" text="Error Log" />
+						<Button fx:id="showCodeBtn" text="Show Code" />
 					</HBox>
 				</ToolBar>
 			</VBox>

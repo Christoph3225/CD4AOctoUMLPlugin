@@ -3,6 +3,8 @@ package controller;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,9 +18,12 @@ import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.umlcd4a.cd4analysis._ast.ASTCDCompilationUnit;
 import de.monticore.umlcd4a.prettyprint.CDPrettyPrinterConcreteVisitor;
 import exceptions.*;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -39,7 +44,7 @@ import view.nodes.PackageNodeView;
 public class CD4AController extends AbstractDiagramController {
   
   @FXML
-  Button showErrorLogBtn, editInfoBtn;
+  Button showErrorLogBtn, editInfoBtn, showCodeBtn;
   @FXML
   Label packageLbl, cdNameLbl, importLbl;
   
@@ -497,6 +502,9 @@ public class CD4AController extends AbstractDiagramController {
     image = new Image("/icons/showerrorlogw.png");
     showErrorLogBtn.setGraphic(new ImageView(image));
     showErrorLogBtn.setText("");
+    image = new Image("/icons/showcodew.png");
+    showCodeBtn.setGraphic(new ImageView(image));
+    showCodeBtn.setText("");
     buttonInUse = createBtn;
     buttonInUse.getStyleClass().add("button-in-use"); //
     // ---------------------- Actions for buttons ----------------------------
@@ -637,6 +645,59 @@ public class CD4AController extends AbstractDiagramController {
       else {
         errorLog.addLog(new CodeGenerationException(null, null));
       }
+    });
+    
+    showCodeBtn.setOnAction(event -> {
+      if(selectedNodes.size() > 0) {
+        for(AbstractNodeView view : selectedNodes) {
+          PopOver pop = new PopOver();
+          String fileTitle = view.getRefNode().getTitle();
+          String folder = plugin.getUsageFolderPath();
+          
+          String filename = folder + "/src/main/java/" + fileTitle + ".java";
+          File file = new File(filename);
+          if(file.exists()) {
+            VBox box = new VBox();
+            try {
+              List<String> allLines = Files.readAllLines(Paths.get(filename));
+              String code = "";
+              for(String line : allLines) {
+                code += line + "\n";
+              }
+              TextArea textField = new TextArea(code);
+              Button saveBtn = new Button("Save");
+              saveBtn.setOnAction(new EventHandler<ActionEvent>() {
+                @Override 
+                public void handle(ActionEvent e) {
+                  try {
+                    FileUtils.writeStringToFile(new File(filename), textField.getText());
+                    Notifications.create().title("Code Display").text("Code file was saved.").showInformation();
+                  }
+                  catch (IOException e1) {
+                    e1.printStackTrace();
+                  }
+                }
+              });
+              box.getChildren().add(textField);
+              box.getChildren().add(saveBtn);
+            }
+            catch (IOException e) {
+              e.printStackTrace();
+            }
+            pop.setContentNode(box);
+          } else {
+            Label label = new Label("No generated code available.");
+            pop.setContentNode(label);
+          }
+          
+          //pop.setContentNode();
+          
+          pop.show(view);
+        }
+      } else {
+        Notifications.create().title("Code Display").text("No Node was selected.").showInformation();
+      }
+      
     });
   }
   
