@@ -867,13 +867,14 @@ public class CD4APlugin implements MontiCorePlugIn {
 	}
 
 	@Override
-	public List<String> showContainerInfoDialog(Stage stage, List<String> infoList) {
+	public List<String> showContainerInfoDialog(Stage stage, List<String> infoNames, List<String> infoList) {
 		List<String> resList = new ArrayList<>();
 		Dialog<List<String>> dialog = new Dialog<List<String>>();
 		dialog.setTitle("Enter Container Info");
 
 		DialogPane pane = new DialogPane();
 		GridPane gridPane = new GridPane();
+		/* alte Vorgehensweise
 		Label packageLbl = new Label("Enter package name:");
 		Label importLbl = new Label("Enter imports:");
 		Label nameLbl = new Label("Enter classdiagram name:");
@@ -902,6 +903,33 @@ public class CD4APlugin implements MontiCorePlugIn {
 			resList.add(importTF.getText());
 			resList.add(nameTF.getText());
 		}
+		*/
+		for(int i=0; i<infoNames.size(); i++) {
+		  String name = infoNames.get(i);
+		  Label lbl = new Label("Enter " + name + ":");
+		  TextField tf = new TextField(infoList.get(i));
+		  gridPane.add(lbl, 0, i);
+		  gridPane.add(tf, 1, i);
+		}
+		
+	  gridPane.getColumnConstraints().add(new ColumnConstraints(170));
+	  gridPane.getColumnConstraints().add(new ColumnConstraints(200));
+    gridPane.setHgap(30);
+    gridPane.setVgap(10);
+    pane.getChildren().add(gridPane);
+    pane.setPrefSize(400, 160);
+    pane.getButtonTypes().add(ButtonType.OK);
+    dialog.setDialogPane(pane);
+    dialog.initOwner(stage);
+    Optional<List<String>> result = dialog.showAndWait();
+    if (result.isPresent()) {
+      for(javafx.scene.Node t : gridPane.getChildren()) {
+        if(t instanceof TextField) {
+          resList.add(((TextField)t).getText());
+        }
+      }
+    }
+		
 		return resList;
 	}
 

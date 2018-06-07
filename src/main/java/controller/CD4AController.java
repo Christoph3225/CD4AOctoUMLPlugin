@@ -43,8 +43,8 @@ import view.nodes.PackageNodeView;
 
 public class CD4AController extends AbstractDiagramController {
   
-  @FXML
-  Button showErrorLogBtn, editInfoBtn, showCodeBtn;
+ // @FXML
+  //Button showErrorLogBtn, editInfoBtn, showCodeBtn;
   @FXML
   Label packageLbl, cdNameLbl, importLbl;
   
@@ -74,7 +74,14 @@ public class CD4AController extends AbstractDiagramController {
     infoList.add(packageName);
     infoList.add(imports);
     infoList.add(modelName);
-    List<String> containerInfo = plugin.showContainerInfoDialog(getStage(), infoList);
+    String pName = "package";
+    String iName = "import";
+    String cName = "classdiagram";
+    List<String> infoNames = new ArrayList<>();
+    infoNames.add(pName);
+    infoNames.add(iName);
+    infoNames.add(cName);
+    List<String> containerInfo = plugin.showContainerInfoDialog(getStage(), infoNames, infoList);
     packageName = containerInfo.get(0);
     imports = containerInfo.get(1);
     modelName = containerInfo.get(2);
@@ -558,7 +565,7 @@ public class CD4AController extends AbstractDiagramController {
     });
     
     showErrorLogBtn.setOnAction(event -> {
-      showErrorLog();
+      showErrorLog(errorLog.getAllLogs());
     });
     
     validateBtn.setOnAction(event -> {
@@ -648,56 +655,7 @@ public class CD4AController extends AbstractDiagramController {
     });
     
     showCodeBtn.setOnAction(event -> {
-      if(selectedNodes.size() > 0) {
-        for(AbstractNodeView view : selectedNodes) {
-          PopOver pop = new PopOver();
-          String fileTitle = view.getRefNode().getTitle();
-          String folder = plugin.getUsageFolderPath();
-          
-          String filename = folder + "/src/main/java/" + fileTitle + ".java";
-          File file = new File(filename);
-          if(file.exists()) {
-            VBox box = new VBox();
-            try {
-              List<String> allLines = Files.readAllLines(Paths.get(filename));
-              String code = "";
-              for(String line : allLines) {
-                code += line + "\n";
-              }
-              TextArea textField = new TextArea(code);
-              Button saveBtn = new Button("Save");
-              saveBtn.setOnAction(new EventHandler<ActionEvent>() {
-                @Override 
-                public void handle(ActionEvent e) {
-                  try {
-                    FileUtils.writeStringToFile(new File(filename), textField.getText());
-                    Notifications.create().title("Code Display").text("Code file was saved.").showInformation();
-                  }
-                  catch (IOException e1) {
-                    e1.printStackTrace();
-                  }
-                }
-              });
-              box.getChildren().add(textField);
-              box.getChildren().add(saveBtn);
-            }
-            catch (IOException e) {
-              e.printStackTrace();
-            }
-            pop.setContentNode(box);
-          } else {
-            Label label = new Label("No generated code available.");
-            pop.setContentNode(label);
-          }
-          
-          //pop.setContentNode();
-          
-          pop.show(view);
-        }
-      } else {
-        Notifications.create().title("Code Display").text("No Node was selected.").showInformation();
-      }
-      
+      showCode(plugin.getUsageFolderPath());
     });
   }
   
@@ -744,6 +702,7 @@ public class CD4AController extends AbstractDiagramController {
     showErrorLogBtn.setText("(" + errorCounter + ")");
   }
   
+  /*
   private void showErrorLog() {
     PopOver pop = new PopOver();
     if (errorLog.getAllLogs().size() > 0) {
@@ -756,6 +715,7 @@ public class CD4AController extends AbstractDiagramController {
     
     pop.show(showErrorLogBtn);
   }
+  */
   
   private AbstractNodeView getCorrespondingNodeView(Node n) {
     AbstractNodeView view = null;
