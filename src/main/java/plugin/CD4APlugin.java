@@ -15,6 +15,7 @@ import de.monticore.types.prettyprint.TypesPrettyPrinterConcreteVisitor;
 import de.monticore.types.types._ast.*;
 import de.monticore.types.types._parser.TypesParser;
 import de.monticore.umlcd4a.cd4analysis._ast.*;
+import de.monticore.umlcd4a.cd4analysis._cocos.CD4AnalysisCoCoChecker;
 import de.monticore.umlcd4a.prettyprint.CDPrettyPrinterConcreteVisitor;
 import exceptions.AssocLeftRefNameMissingException;
 import exceptions.AssocRightRefNameMissingException;
@@ -824,6 +825,9 @@ public class CD4APlugin implements MontiCorePlugIn {
         errorList.add(new AssocRightRefNameMissingException(abstrEdge.getEndNode(), getCorrespondingNodeView(abstrEdge.getEndNode(), map)));
       }
 		}
+		
+		// check existing CoCos
+		CD4AnalysisCoCoChecker cocoChecker = new CD4AnalysisCoCoChecker();
 		
 		return errorList;
 	}
