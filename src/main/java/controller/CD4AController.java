@@ -24,6 +24,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
@@ -512,6 +513,25 @@ public class CD4AController extends AbstractDiagramController {
     image = new Image("/icons/showcodew.png");
     showCodeBtn.setGraphic(new ImageView(image));
     showCodeBtn.setText("");
+    
+    // set ToolTips
+    createBtn.setTooltip(new Tooltip("Create class"));
+    packageBtn.setTooltip(new Tooltip("Create package"));
+    edgeBtn.setTooltip(new Tooltip("Create edge"));
+    selectBtn.setTooltip(new Tooltip("Select nodes"));
+    undoBtn.setTooltip(new Tooltip("Undo action"));
+    redoBtn.setTooltip(new Tooltip("Redo action"));
+    moveBtn.setTooltip(new Tooltip("Move scene"));
+    deleteBtn.setTooltip(new Tooltip("Delete selected nodes"));
+    drawBtn.setTooltip(new Tooltip("Start hand drawing"));
+    recognizeBtn.setTooltip(new Tooltip("Recognize nodes and edges"));
+    voiceBtn.setTooltip(new Tooltip("Activate voice commands"));
+    validateBtn.setTooltip(new Tooltip("Validate the model"));
+    generateBtn.setTooltip(new Tooltip("Generate code for the model"));
+    editInfoBtn.setTooltip(new Tooltip("Edit container information"));
+    showErrorLogBtn.setTooltip(new Tooltip("Show error log"));
+    showCodeBtn.setTooltip(new Tooltip("Show code for selected node"));
+    
     buttonInUse = createBtn;
     buttonInUse.getStyleClass().add("button-in-use"); //
     // ---------------------- Actions for buttons ----------------------------
@@ -635,6 +655,11 @@ public class CD4AController extends AbstractDiagramController {
         errorLog.addLog(ex);
       }
       errorCounter = errorLog.getAllLogs().size();
+      for(MontiCoreException ex : astErrorList) {
+        if(ex instanceof CoCoException) {
+          errorCounter--;
+        }
+      }
       showErrorLogBtn.setText("(" + errorCounter + ")");
       
       if (errorCounter == 0) {
