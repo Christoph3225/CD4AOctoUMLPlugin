@@ -40,6 +40,7 @@ import view.nodes.AbstractNodeView;
 
 public class CD4APlugin implements MontiCorePlugIn {
 
+//test
 	private CD4AnalysisNodeFactory cd4aFactory;
 	private TypesNodeFactory typesFactory;
 	private ASTCDCompilationUnit cdCompUnit;
