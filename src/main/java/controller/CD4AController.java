@@ -670,7 +670,7 @@ public class CD4AController extends AbstractDiagramController {
     });
     
     generateBtn.setOnAction(event -> {
-      boolean generateSuccess = plugin.generateCode(unit, plugin.getUsageFolderPath() + "/src/main/java/");
+      boolean generateSuccess = plugin.generateCode(unit, packageName, plugin.getUsageFolderPath() + "/src/main/java/");
       if (generateSuccess) {
         Notifications.create().title("Code Generator").text("Code generation was successfull.").showInformation();
       }

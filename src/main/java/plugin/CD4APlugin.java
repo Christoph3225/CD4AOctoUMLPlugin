@@ -16,20 +16,13 @@ import de.monticore.types.types._ast.*;
 import de.monticore.types.types._parser.TypesParser;
 import de.monticore.umlcd4a.cd4analysis._ast.*;
 import de.monticore.umlcd4a.cd4analysis._cocos.CD4AnalysisCoCoChecker;
+import de.monticore.umlcd4a.cocos.ebnf.*;
+import de.monticore.umlcd4a.cocos.mcg.*;
+import de.monticore.umlcd4a.cocos.mcg2ebnf.*;
 import de.monticore.umlcd4a.prettyprint.CDPrettyPrinterConcreteVisitor;
-import exceptions.AssocLeftRefNameMissingException;
-import exceptions.AssocRightRefNameMissingException;
-import exceptions.ClassAttributeNameMissingException;
-import exceptions.ClassAttributeTypeMissingException;
-import exceptions.ClassNameMissingException;
-import exceptions.ConstructorNameMissingException;
-import exceptions.EnumConstantNameMissingException;
-import exceptions.EnumNameMissingException;
-import exceptions.InterfaceNameMissingException;
-import exceptions.MethodNameMissingException;
-import exceptions.MethodParameterNameMissingException;
-import exceptions.MethodParameterTypeMissingException;
-import exceptions.MethodReturnTypeMissingException;
+import de.se_rwth.commons.logging.Finding;
+import de.se_rwth.commons.logging.Log;
+import exceptions.*;
 import generator.CD4ACodeGenerator;
 import javafx.stage.Stage;
 import misc.OctoPair;
@@ -827,7 +820,69 @@ public class CD4APlugin implements MontiCorePlugIn {
 		}
 		
 		// check existing CoCos
+		/*
 		CD4AnalysisCoCoChecker cocoChecker = new CD4AnalysisCoCoChecker();
+		cocoChecker.addCoCo(new AssociationNameLowerCase());
+		cocoChecker.addCoCo(new AssociationNameNoConflictWithAttribute());
+		cocoChecker.addCoCo(new AssociationNameUnique());
+		cocoChecker.addCoCo(new AssociationOrderedCardinalityGreaterOne());
+		cocoChecker.addCoCo(new AssociationQualifierAttributeExistsInTarget());
+		cocoChecker.addCoCo(new AssociationQualifierOnCorrectSide());
+		cocoChecker.addCoCo(new AssociationQualifierTypeExists());
+		cocoChecker.addCoCo(new AssociationRoleNameLowerCase());
+		cocoChecker.addCoCo(new AssociationRoleNameNoConflictWithAttribute());
+		cocoChecker.addCoCo(new AssociationRoleNameNoConflictWithOtherRoleNames());
+		cocoChecker.addCoCo(new AssociationSourceNotEnum());
+		cocoChecker.addCoCo(new AssociationSourceTypeNotExternal());
+		cocoChecker.addCoCo(new AssociationSourceTypeNotGenericChecker());
+		cocoChecker.addCoCo(new AssociationSrcAndTargetTypeExistChecker());
+		cocoChecker.addCoCo(new AttributeNameLowerCase());
+		cocoChecker.addCoCo(new AttributeOverriddenTypeMatch());
+		cocoChecker.addCoCo(new AttributeTypeCompatible());
+		cocoChecker.addCoCo(new AttributeTypeExists());
+		cocoChecker.addCoCo(new AttributeUniqueInClassCoco());
+		cocoChecker.addCoCo(new ClassExtendExternalType());
+		cocoChecker.addCoCo(new ClassExtendsOnlyClasses());
+		cocoChecker.addCoCo(new ClassImplementOnlyInterfaces());
+		cocoChecker.addCoCo(new CompositionCardinalityValid());
+		cocoChecker.addCoCo(new DiagramNameUpperCase());
+		cocoChecker.addCoCo(new EnumConstantsUnique());
+		cocoChecker.addCoCo(new EnumImplementOnlyInterfaces());
+		cocoChecker.addCoCo(new ExtendsNotCyclic());
+		cocoChecker.addCoCo(new GenericParameterCountMatch());
+		cocoChecker.addCoCo(new GenericsNotNested());
+		cocoChecker.addCoCo(new GenericTypeHasParameters());
+		cocoChecker.addCoCo(new InterfaceExtendsOnlyInterfaces());
+		cocoChecker.addCoCo(new TypeNameUpperCase());
+		cocoChecker.addCoCo(new TypeNoInitializationOfDerivedAttribute());
+		cocoChecker.addCoCo(new UniqueTypeNames());
+		cocoChecker.addCoCo(new AssociationModifierCoCo());
+		cocoChecker.addCoCo(new AttributeNotAbstractCoCo());
+		cocoChecker.addCoCo(new ClassInvalidModifiersCoCo());
+		cocoChecker.addCoCo(new EnumInvalidModifiersCoCo());
+		cocoChecker.addCoCo(new InterfaceInvalidModifiersCoCo());
+		cocoChecker.addCoCo(new ModifierNotMultipleVisibilitiesCoCo());
+		cocoChecker.addCoCo(new AssociationEndModifierRestrictionCoCo());
+		cocoChecker.addCoCo(new AssociationNoStereotypesCoCo());
+		cocoChecker.addCoCo(new AttributeModifierOnlyDerivedCoCo());
+		cocoChecker.addCoCo(new ClassModifierOnlyAbstractCoCo());
+		cocoChecker.addCoCo(new ClassNoConstructorsCoCo());
+		cocoChecker.addCoCo(new ClassNoMethodsCoCo());
+		cocoChecker.addCoCo(new EnumNoConstructorsCoCo());
+		cocoChecker.addCoCo(new EnumConstantNameUpperCase());
+		cocoChecker.addCoCo(new EnumNoConstructorsCoCo());
+		cocoChecker.addCoCo(new EnumNoMethodsCoCo());
+		cocoChecker.addCoCo(new EnumNoModifierCoCo());
+		cocoChecker.addCoCo(new InterfaceNoAttributesCoCo());
+		cocoChecker.addCoCo(new InterfaceNoMethodsCoCo());
+		cocoChecker.addCoCo(new InterfaceNoModifierCoCo());
+		cocoChecker.addCoCo(new StereoValueNoValueCoCo());
+		
+		cocoChecker.checkAll(cdCompUnit);
+		/*List<Finding> allCoCoLogs = Log.getFindings();
+		for(Finding f : allCoCoLogs) {
+		  errorList.add(new CoCoException(null, null, f.getMsg()));
+		}*/
 		
 		return errorList;
 	}
@@ -839,9 +894,9 @@ public class CD4APlugin implements MontiCorePlugIn {
 	}
 
 	@Override
-	public boolean generateCode(ASTNode node, String path) {
+	public boolean generateCode(ASTNode node, String packageName, String path) {
 		CD4ACodeGenerator cd4aGenerator = CD4ACodeGenerator.getInstance();
-		cd4aGenerator.generate((ASTCDCompilationUnit) node, path);
+		cd4aGenerator.generate((ASTCDCompilationUnit) node, packageName, path);
 		if(cd4aGenerator.wasSuccessfull()) {
 		  return true;
 		} else {

@@ -26,30 +26,30 @@ public class CD4ACodeGenerator {
     return singleTonGenerator;
   }
   
-  public void generate(ASTCDCompilationUnit unit, String outputPath) {
+  public void generate(ASTCDCompilationUnit unit, String packageName, String outputPath) {
     ASTCDDefinition cdDef = unit.getCDDefinition();
     List<ASTCDClass> cdClasses = cdDef.getCDClasses();
     List<ASTCDInterface> cdInterfaces = cdDef.getCDInterfaces();
     List<ASTCDEnum> cdEnums = cdDef.getCDEnums();
     
     for (ASTCDClass c : cdClasses) {
-      generateClass(c, outputPath);
+      generateClass(c, packageName, outputPath);
     }
     
     for (ASTCDInterface i : cdInterfaces) {
-      generateInterface(i, outputPath);
+      generateInterface(i, packageName, outputPath);
     }
     
     for (ASTCDEnum e : cdEnums) {
-      generateEnum(e, outputPath);
+      generateEnum(e, packageName, outputPath);
     }
     
     // set up the number of exceptions
     errorCounter = errorList.size();
   }
   
-  private void generateClass(ASTCDClass c, String path) {
-    String code = "";
+  private void generateClass(ASTCDClass c, String packageName, String path) {
+    String code = "package " + packageName + ";" + "\n";
     String className = c.getName();
     
     String firstLine;
@@ -183,8 +183,8 @@ public class CD4ACodeGenerator {
     return result;
   }
   
-  private void generateInterface(ASTCDInterface i, String path) {
-    String code = "";
+  private void generateInterface(ASTCDInterface i, String packageName, String path) {
+    String code = "package " + packageName + ";" + "\n";
     String interfName = i.getName();
     
     String firstLine;
@@ -220,8 +220,8 @@ public class CD4ACodeGenerator {
     }
   }
   
-  private void generateEnum(ASTCDEnum e, String path) {
-    String code = "";
+  private void generateEnum(ASTCDEnum e, String packageName, String path) {
+    String code = "package " + packageName + ";" + "\n";
     String enumName = e.getName();
     
     String firstLine = "public enum " + enumName + " { \n";
